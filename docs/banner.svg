@@ -41,8 +41,8 @@
   </g>
 
   <!-- wordmark -->
-  <text x="272" y="150" font-family="Figtree, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="84" font-weight="800" letter-spacing="-3" fill="url(#text)">Fader</text>
-  <text x="276" y="196" font-family="Figtree, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" fill="#8f8f9d">Per-app volume for Windows, done right.</text>
+  <text x="272" y="150" font-family="Figtree, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="84" font-weight="800" letter-spacing="-3" fill="#a78bfa">Fader</text>
+  <text x="276" y="196" font-family="Figtree, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" fill="#b4b4c2">Per-app volume for Windows, done right.</text>
 
   <!-- mini mixer rows -->
   <g transform="translate(760,70)" font-family="Figtree, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#f4f4f8">

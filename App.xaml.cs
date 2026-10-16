@@ -1,0 +1,193 @@
+using System.Windows;
+using System.Windows.Media;
+using Fader.Audio;
+using Fader.Native;
+using Fader.Rules;
+using Fader.Tray;
+using Fader.UI;
+using static Fader.Native.NativeMethods;
+
+namespace Fader;
+
+public partial class App : Application
+{
+    private Mutex? _mutex;
+    private EventWaitHandle? _showSignal;
+    private Settings _settings = new();
+    private AudioSessionService? _service;
+    private RulesEngine? _rules;
+    private FlyoutWindow? _flyout;
+    private OsdWindow? _osd;
+    private SettingsWindow? _settingsWindow;
+    private TrayIcon? _tray;
+    private HotkeyManager? _hotkey;
+    private GestureController? _gesture;
+    private TaskbarTracker? _taskbar;
+    private EventWaitHandle? _quitSignal;
+    private System.Windows.Threading.DispatcherTimer? _saveTimer;
+    private string _appliedHotkey = string.Empty;
+    private string _appliedAccent = string.Empty;
+
+    protected override void OnStartup(StartupEventArgs e)
+    {
+        base.OnStartup(e);
+        AppDomain.CurrentDomain.UnhandledException += (_, a) => Log.Error("unhandled", a.ExceptionObject as Exception ?? new Exception("unknown"));
+        DispatcherUnhandledException += (_, a) => { Log.Error("dispatcher", a.Exception); a.Handled = true; };
+        TaskScheduler.UnobservedTaskException += (_, a) => { Log.Error("task", a.Exception); a.SetObserved(); };
+
+        if (e.Args.Length > 0 && e.Args[0].Equals("--probe", StringComparison.OrdinalIgnoreCase))
+        {
+            int code = 1;
+            try { code = Probe.Run(e.Args.Length > 1 ? e.Args[1] : "fader-probe.json"); }
+            catch (Exception ex) { Log.Error("probe", ex); }
+            Shutdown(code);
+            return;
+        }
+
+        bool wantQuit = e.Args.Any(a => a.Equals("--quit", StringComparison.OrdinalIgnoreCase));
+        bool wantAutostart = e.Args.Any(a => a.Equals("--autostart", StringComparison.OrdinalIgnoreCase));
+
+        // Single instance: a second launch asks the first one to open the mixer (or, with --quit, to exit cleanly).
+        _mutex = new Mutex(true, @"Local\Fader.SingleInstance", out bool isFirst);
+        _showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\Fader.ShowFlyout");
+        _quitSignal = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\Fader.Quit");
+        if (!isFirst)
+        {
+            if (wantQuit) _quitSignal.Set();
+            else { AllowSetForegroundWindow(ASFW_ANY); _showSignal.Set(); } // let the running instance bring its flyout to the front
+            Shutdown(0);
+            return;
+        }
+        if (wantQuit) { Shutdown(0); return; } // nothing was running
+        var signalThread = new Thread(() =>
+        {
+            var handles = new WaitHandle[] { _showSignal, _quitSignal };
+            while (true)
+            {
+                int which = WaitHandle.WaitAny(handles);
+                if (which == 1) { Dispatcher.BeginInvoke(() => Shutdown()); return; }
+                Dispatcher.BeginInvoke(ToggleFlyout);
+            }
+        }) { IsBackground = true, Name = "Fader.ShowSignal" };
+        signalThread.Start();
+
+        _settings = Settings.Load();
+        ApplyAccent(_settings.Accent);
+
+        _service = new AudioSessionService(Dispatcher);
+        _rules = new RulesEngine(_service, () => _settings);
+        _service.Start();
+
+        _osd = new OsdWindow(() => _settings);
+        CreateFlyout();
+
+        _taskbar = new TaskbarTracker(Dispatcher, () => _service?.Master.VolumePercent ?? -1);
+        _gesture = new GestureController(_service, () => _settings, _osd, Dispatcher, _taskbar);
+        _gesture.SpeakerClicked += pt => _flyout?.Toggle(pt);
+        _gesture.ClickedOutsideFlyout += () => _flyout?.HideIfUnpinned();
+        _hotkey = new HotkeyManager();
+        _hotkey.Pressed += ToggleFlyout;
+        _hotkey.Register(_settings.Hotkey);
+        _appliedHotkey = _settings.Hotkey;
+        _appliedAccent = _settings.Accent;
+
+        _tray = new TrayIcon { IsAutoStart = AutoStart.IsEnabled };
+        _tray.LeftClick += ToggleFlyout;
+        _tray.OpenRequested += ToggleFlyout;
+        _tray.SettingsRequested += OpenSettings;
+        _tray.QuitRequested += () => Shutdown();
+        _tray.AutoStartToggled += on => AutoStart.Set(on);
+
+        _rules.Applied += (app, what) => { if (_settings.ShowOsd) _osd.ShowMessage(app.Name, app.Icon, what, IntPtr.Zero, app.VolumePercent); };
+
+        if (!_settings.FirstRunDone)
+        {
+            _tray.Balloon("Fader is running in the tray",
+                $"Click the Windows speaker icon or press {_settings.Hotkey} for the mixer. Scroll over an app's taskbar button, or hold {_settings.ModifierLabel} and scroll over its window, to change its volume.");
+            _settings.FirstRunDone = true;
+            _settings.Save();
+        }
+        if (wantAutostart) AutoStart.Set(true);
+        Log.Write($"[app] started v{typeof(App).Assembly.GetName().Version} hook={_gesture.HookInstalled} data={Log.Dir}");
+    }
+
+    private void CreateFlyout()
+    {
+        _flyout = new FlyoutWindow(_service!, () => _settings);
+        _flyout.SettingsRequested += OpenSettings;
+        _flyout.OpenStateChanged += () => _gesture?.SetFlyoutRect(_flyout.IsOpen ? _flyout.ScreenRect : null);
+    }
+
+    private void ToggleFlyout()
+    {
+        if (_flyout == null) return;
+        GetCursorPos(out var pt);
+        _flyout.Toggle(pt);
+    }
+
+    private void OpenSettings()
+    {
+        if (_service == null) return;
+        if (_settingsWindow == null)
+        {
+            _settingsWindow = new SettingsWindow(_settings, _service, OnSettingsChanged);
+            _settingsWindow.Closed += (_, _) => _settingsWindow = null;
+        }
+        _settingsWindow.Show();
+        _settingsWindow.Activate();
+    }
+
+    /// <summary>Called for every edit in the settings window (slider drags included): save debounced, re-apply only what changed.</summary>
+    private void OnSettingsChanged()
+    {
+        if (_settings.Hotkey != _appliedHotkey) { _hotkey?.Register(_settings.Hotkey); _appliedHotkey = _settings.Hotkey; }
+        if (_settings.Accent != _appliedAccent) { ApplyAccent(_settings.Accent); _appliedAccent = _settings.Accent; }
+        _gesture?.ApplySettings();
+        _saveTimer ??= new System.Windows.Threading.DispatcherTimer { Interval = TimeSpan.FromMilliseconds(400) };
+        _saveTimer.Stop();
+        _saveTimer.Tick -= SaveTimer_Tick;
+        _saveTimer.Tick += SaveTimer_Tick;
+        _saveTimer.Start();
+    }
+
+    private void SaveTimer_Tick(object? sender, EventArgs e)
+    {
+        _saveTimer?.Stop();
+        _settings.Save();
+    }
+
+    private void ApplyAccent(string hex)
+    {
+        try
+        {
+            var c = (Color)ColorConverter.ConvertFromString(hex);
+            _appliedAccent = hex;
+            Resources["AccentBrush"] = Freeze(new SolidColorBrush(c));
+            Resources["AccentSoftBrush"] = Freeze(new SolidColorBrush(Color.FromArgb(0x33, c.R, c.G, c.B)));
+            Resources["AccentGradient"] = Freeze(new LinearGradientBrush(Shade(c, 0.88), Shade(c, 1.18), 0));
+        }
+        catch (Exception ex) { Log.Error("accent " + hex, ex); }
+    }
+
+    private static Brush Freeze(Brush b) { b.Freeze(); return b; }
+
+    private static Color Shade(Color c, double factor)
+        => Color.FromRgb((byte)Math.Clamp(c.R * factor, 0, 255), (byte)Math.Clamp(c.G * factor, 0, 255), (byte)Math.Clamp(c.B * factor, 0, 255));
+
+    protected override void OnExit(ExitEventArgs e)
+    {
+        try
+        {
+            if (_saveTimer is { IsEnabled: true }) { _saveTimer.Stop(); _settings.Save(); }
+            _gesture?.Dispose();
+            _taskbar?.Dispose();
+            _hotkey?.Dispose();
+            _tray?.Dispose();
+            _service?.Dispose();
+            if (_mutex != null) { try { _mutex.ReleaseMutex(); } catch { } _mutex.Dispose(); }
+            Log.Write("[app] exit");
+        }
+        catch (Exception ex) { Log.Error("exit", ex); }
+        base.OnExit(e);
+    }
+}

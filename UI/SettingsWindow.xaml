@@ -1,0 +1,170 @@
+<Window x:Class="Fader.UI.SettingsWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:audio="clr-namespace:Fader.Audio"
+        xmlns:rules="clr-namespace:Fader.Rules"
+        Title="Fader settings" Width="620" Height="720" MinWidth="480" MinHeight="400"
+        WindowStyle="None" ResizeMode="CanResize" Background="{StaticResource WindowBrush}"
+        WindowStartupLocation="CenterScreen" ShowInTaskbar="True"
+        FontFamily="{StaticResource UiFont}" UseLayoutRounding="True" SnapsToDevicePixels="True"
+        TextOptions.TextFormattingMode="Ideal" TextOptions.TextRenderingMode="ClearType"
+        Icon="pack://application:,,,/assets/fader-256.png">
+
+    <!-- Normal (non-layered) window: crisp text, resizable from every edge, scrolls. -->
+    <WindowChrome.WindowChrome>
+        <WindowChrome CaptionHeight="0" ResizeBorderThickness="8" GlassFrameThickness="0" CornerRadius="0" UseAeroCaptionButtons="False"/>
+    </WindowChrome.WindowChrome>
+
+    <Border BorderBrush="{StaticResource HairlineStrongBrush}" BorderThickness="1">
+        <DockPanel>
+
+            <!-- title bar -->
+            <Grid DockPanel.Dock="Top" Height="52" Background="Transparent" MouseLeftButtonDown="TitleBar_MouseDown">
+                <StackPanel Orientation="Horizontal" Margin="22,0" VerticalAlignment="Center">
+                    <Image Source="pack://application:,,,/assets/fader-256.png" Width="18" Height="18" Margin="0,0,10,0" RenderOptions.BitmapScalingMode="HighQuality"/>
+                    <TextBlock Text="Fader" Style="{StaticResource BodyText}" FontWeight="SemiBold" FontSize="14"/>
+                    <TextBlock Text="Settings" Style="{StaticResource DimText}" FontSize="14" Margin="8,0,0,0"/>
+                </StackPanel>
+                <Button Style="{StaticResource IconButton}" HorizontalAlignment="Right" VerticalAlignment="Center" Margin="0,0,12,0" Width="32" Height="32" Padding="0" Click="Close_Click" ToolTip="Close">
+                    <TextBlock Text="&#xE8BB;" Style="{StaticResource Glyph}" FontSize="10"/>
+                </Button>
+            </Grid>
+
+            <!-- footer -->
+            <Grid DockPanel.Dock="Bottom" Margin="22,8,22,14">
+                <TextBlock Style="{StaticResource DimText}" FontSize="11" Foreground="{StaticResource TextFaintBrush}" Text="Changes are saved as you make them. Drag the edges to resize."/>
+                <TextBlock x:Name="VersionText" Style="{StaticResource DimText}" FontSize="11" Foreground="{StaticResource TextFaintBrush}" HorizontalAlignment="Right" Text="v0.2"/>
+            </Grid>
+
+            <ScrollViewer Style="{StaticResource DarkScrollViewer}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled" Margin="22,0,10,0" PanningMode="VerticalOnly">
+                <StackPanel Margin="0,0,10,0">
+
+                    <!-- ===== quick adjust ===== -->
+                    <TextBlock Text="QUICK ADJUST" Style="{StaticResource SectionTitle}" Margin="0,2,0,8"/>
+                    <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding TaskbarScroll}" Margin="0,0,0,10"
+                              Content="Scrolling over an app's taskbar button changes its volume, no key needed. Over the clock, tray icons or empty taskbar it changes the master volume."/>
+                    <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding TaskbarHoverPill}" Content="Hovering a taskbar button shows that app's level" Margin="0,0,0,10"/>
+                    <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding SpeakerIconOpensFader}" Margin="0,0,0,14"
+                              Content="Clicking the Windows speaker icon in the tray opens Fader (right-click stays Windows')"/>
+                    <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding GestureEnabled}" Content="Change an app's volume by scrolling over its window" Margin="0,0,0,12"/>
+                    <TextBlock Text="while holding" Style="{StaticResource DimText}" Margin="0,0,0,6"/>
+                    <WrapPanel Margin="0,0,0,12" IsEnabled="{Binding GestureEnabled}">
+                        <RadioButton Style="{StaticResource Segment}" Content="Alt" IsChecked="{Binding ModAlt}"/>
+                        <RadioButton Style="{StaticResource Segment}" Content="Ctrl + Alt" IsChecked="{Binding ModCtrlAlt}"/>
+                        <RadioButton Style="{StaticResource Segment}" Content="Shift + Alt" IsChecked="{Binding ModShiftAlt}"/>
+                        <RadioButton Style="{StaticResource Segment}" Content="Ctrl + Shift" IsChecked="{Binding ModCtrlShift}"/>
+                    </WrapPanel>
+                    <TextBlock Text="each wheel notch changes the level by" Style="{StaticResource DimText}" Margin="0,0,0,6"/>
+                    <WrapPanel Margin="0,0,0,14">
+                        <RadioButton Style="{StaticResource Segment}" Content="1 %" IsChecked="{Binding Step1}"/>
+                        <RadioButton Style="{StaticResource Segment}" Content="2 %" IsChecked="{Binding Step2}"/>
+                        <RadioButton Style="{StaticResource Segment}" Content="5 %" IsChecked="{Binding Step5}"/>
+                    </WrapPanel>
+                    <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding ShowOsd}" Content="Show the level on screen while adjusting" Margin="0,0,0,10"/>
+                    <TextBlock Text="the level pill always sits at the" Style="{StaticResource DimText}" Margin="0,0,0,6"/>
+                    <WrapPanel IsEnabled="{Binding ShowOsd}">
+                        <RadioButton Style="{StaticResource Segment}" Content="top" IsChecked="{Binding PosTop}"/>
+                        <RadioButton Style="{StaticResource Segment}" Content="center" IsChecked="{Binding PosCenter}"/>
+                        <RadioButton Style="{StaticResource Segment}" Content="bottom" IsChecked="{Binding PosBottom}"/>
+                        <TextBlock Text="of the screen the mouse is on" Style="{StaticResource DimText}" VerticalAlignment="Center" Margin="6,0,0,0"/>
+                    </WrapPanel>
+
+                    <!-- ===== mixer ===== -->
+                    <TextBlock Text="MIXER" Style="{StaticResource SectionTitle}"/>
+                    <Grid Margin="0,0,0,12">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="Auto"/>
+                        </Grid.ColumnDefinitions>
+                        <TextBlock Text="Open the mixer with" Style="{StaticResource BodyText}" VerticalAlignment="Center"/>
+                        <TextBox x:Name="HotkeyBox" Grid.Column="1" Style="{StaticResource DarkTextBox}" Width="160" IsReadOnly="True" TextAlignment="Center"
+                                 Text="{Binding Hotkey, Mode=OneWay}" PreviewKeyDown="Hotkey_PreviewKeyDown"
+                                 ToolTip="Click here, then press the shortcut you want. Backspace removes it."/>
+                    </Grid>
+                    <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding AutoStartEnabled}" Content="Start Fader when Windows starts"/>
+                    <TextBlock Style="{StaticResource DimText}" FontSize="11" Foreground="{StaticResource TextFaintBrush}" TextWrapping="Wrap" Margin="0,8,0,0"
+                               Text="Drag the mixer panel anywhere to keep it open; the pin button does the same. Esc or the pin closes it again."/>
+
+                    <!-- ===== new apps ===== -->
+                    <TextBlock Text="NEW APPS" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Style="{StaticResource DimText}" TextWrapping="Wrap" Margin="0,0,0,12"
+                               Text="Applied the moment an app opens its audio, before you hear anything: an app that was just launched (or came back after being closed for a while) is set to this level. Apps that were already playing when Fader started are left alone."/>
+                    <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding StartEnabled}" Content="Start newly launched apps at"/>
+                    <Grid Margin="0,4,0,12" IsEnabled="{Binding StartEnabled}">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="*"/>
+                            <ColumnDefinition Width="52"/>
+                        </Grid.ColumnDefinitions>
+                        <Slider Style="{StaticResource FaderSlider}" Value="{Binding StartVolume}" Margin="0,0,12,0"/>
+                        <TextBlock Grid.Column="1" Text="{Binding StartVolume, StringFormat={}{0:0} %}" Style="{StaticResource BodyText}" TextAlignment="Right" VerticalAlignment="Center"/>
+                    </Grid>
+
+                    <!-- ===== per-app rules ===== -->
+                    <TextBlock Text="PER-APP RULES" Style="{StaticResource SectionTitle}"/>
+                    <TextBlock Style="{StaticResource DimText}" TextWrapping="Wrap" Margin="0,0,0,12"
+                               Text="A rule replaces the default start level for that app. Leave the field empty to leave that app alone (it keeps whatever level Windows remembers)."/>
+                    <ItemsControl ItemsSource="{Binding Rules}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type rules:AppRule}">
+                                <Border Background="{StaticResource ElevatedBrush}" CornerRadius="10" Padding="12,8" Margin="0,0,0,6">
+                                    <StackPanel>
+                                        <Grid>
+                                            <Grid.ColumnDefinitions>
+                                                <ColumnDefinition Width="*"/>
+                                                <ColumnDefinition Width="Auto"/>
+                                            </Grid.ColumnDefinitions>
+                                            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                                                <TextBlock Text="{Binding Name}" Style="{StaticResource BodyText}" FontWeight="Medium" TextTrimming="CharacterEllipsis"/>
+                                                <TextBlock Text="{Binding App}" Style="{StaticResource DimText}" FontSize="11" Margin="8,2,0,0"/>
+                                            </StackPanel>
+                                            <Button Grid.Column="1" Style="{StaticResource IconButton}" Width="28" Height="28" Padding="0" Click="RemoveRule_Click" ToolTip="Remove rule">
+                                                <TextBlock Text="&#xE8BB;" Style="{StaticResource Glyph}" FontSize="9"/>
+                                            </Button>
+                                        </Grid>
+                                        <WrapPanel Margin="0,6,0,0">
+                                            <TextBlock Text="starts at" Style="{StaticResource DimText}" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                            <TextBox Style="{StaticResource DarkTextBox}" Width="54" TextAlignment="Center" Padding="6,5" Validation.ErrorTemplate="{x:Null}" Margin="0,0,6,0"
+                                                     Text="{Binding StartVolume, UpdateSourceTrigger=PropertyChanged, TargetNullValue='', Delay=250}"/>
+                                            <TextBlock Text="%   (empty = leave alone)" Style="{StaticResource DimText}" VerticalAlignment="Center"/>
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Text="Add a rule for an app that has audio right now:" Style="{StaticResource DimText}" Margin="0,8,0,8"/>
+                    <ItemsControl ItemsSource="{Binding KnownApps}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate DataType="{x:Type audio:AppAudio}">
+                                <Button x:Name="Chip" Style="{StaticResource PillButton}" Margin="0,0,6,6" Padding="8,5,12,5" Click="AddRule_Click">
+                                    <StackPanel Orientation="Horizontal">
+                                        <Rectangle Width="16" Height="16" RadiusX="4" RadiusY="4" Margin="0,0,8,0">
+                                            <Rectangle.Fill>
+                                                <ImageBrush ImageSource="{Binding Icon}" Stretch="Uniform"/>
+                                            </Rectangle.Fill>
+                                        </Rectangle>
+                                        <TextBlock Text="{Binding Name}" VerticalAlignment="Center"/>
+                                    </StackPanel>
+                                </Button>
+                                <DataTemplate.Triggers>
+                                    <DataTrigger Binding="{Binding IsSystemSounds}" Value="True">
+                                        <Setter TargetName="Chip" Property="Visibility" Value="Collapsed"/>
+                                    </DataTrigger>
+                                </DataTemplate.Triggers>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <TextBlock x:Name="NoAppsText" Text="Nothing is playing at the moment — open an app that makes sound and it will show up here." Style="{StaticResource DimText}" TextWrapping="Wrap" Visibility="Collapsed" Margin="0,0,0,8"/>
+
+                    <Rectangle Height="12"/>
+                </StackPanel>
+            </ScrollViewer>
+        </DockPanel>
+    </Border>
+</Window>

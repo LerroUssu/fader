@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-label="Fader — per-app volume for Windows, done right">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#0d0d14"/>
+      <stop offset="1" stop-color="#0a0a0e"/>
+    </linearGradient>
+    <radialGradient id="glow" cx="0.22" cy="0.1" r="0.6">
+      <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#8b5cf6"/>
+      <stop offset="1" stop-color="#6d3fe0"/>
+    </linearGradient>
+    <linearGradient id="text" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7c4def"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+    <linearGradient id="fill" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#7c4def"/>
+      <stop offset="1" stop-color="#a78bfa"/>
+    </linearGradient>
+  </defs>
+  <rect width="1200" height="320" rx="24" fill="url(#bg)"/>
+  <rect width="1200" height="320" rx="24" fill="url(#glow)"/>
+  <rect x="0.5" y="0.5" width="1199" height="319" rx="24" fill="none" stroke="#ffffff" stroke-opacity="0.08"/>
+
+  <!-- icon tile -->
+  <g transform="translate(88,88)">
+    <rect width="144" height="144" rx="32" fill="url(#tile)"/>
+    <g stroke="#ffffff" stroke-opacity="0.45" stroke-width="7" stroke-linecap="round">
+      <line x1="43" y1="32" x2="43" y2="112"/>
+      <line x1="72" y1="32" x2="72" y2="112"/>
+      <line x1="101" y1="32" x2="101" y2="112"/>
+    </g>
+    <g fill="#ffffff">
+      <circle cx="43" cy="89" r="12"/>
+      <circle cx="72" cy="58" r="12"/>
+      <circle cx="101" cy="104" r="12"/>
+    </g>
+  </g>
+
+  <!-- wordmark -->
+  <text x="272" y="150" font-family="Figtree, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="84" font-weight="800" letter-spacing="-3" fill="url(#text)">Fader</text>
+  <text x="276" y="196" font-family="Figtree, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" fill="#8f8f9d">Per-app volume for Windows, done right.</text>
+
+  <!-- mini mixer rows -->
+  <g transform="translate(760,70)" font-family="Figtree, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#f4f4f8">
+    <rect x="-20" y="-18" width="400" height="216" rx="18" fill="#111117" stroke="#ffffff" stroke-opacity="0.08"/>
+    <g>
+      <rect x="0" y="4" width="28" height="28" rx="7" fill="#ea4335"/>
+      <text x="40" y="18" font-weight="500">Google Chrome</text>
+      <text x="356" y="18" text-anchor="end" fill="#8f8f9d" font-size="12">58</text>
+      <rect x="40" y="30" width="316" height="4" rx="2" fill="#ffffff" fill-opacity="0.13"/>
+      <rect x="40" y="30" width="183" height="4" rx="2" fill="url(#fill)"/>
+      <circle cx="223" cy="32" r="7" fill="#ffffff"/>
+      <rect x="40" y="40" width="98" height="2" rx="1" fill="#8b5cf6" fill-opacity="0.75"/>
+    </g>
+    <g transform="translate(0,64)">
+      <rect x="0" y="4" width="28" height="28" rx="7" fill="#5865f2"/>
+      <text x="40" y="18" font-weight="500">Discord</text>
+      <text x="356" y="18" text-anchor="end" fill="#8f8f9d" font-size="12">80</text>
+      <rect x="40" y="30" width="316" height="4" rx="2" fill="#ffffff" fill-opacity="0.13"/>
+      <rect x="40" y="30" width="253" height="4" rx="2" fill="url(#fill)"/>
+      <circle cx="293" cy="32" r="7" fill="#ffffff"/>
+      <rect x="40" y="40" width="38" height="2" rx="1" fill="#8b5cf6" fill-opacity="0.75"/>
+    </g>
+    <g transform="translate(0,128)">
+      <rect x="0" y="4" width="28" height="28" rx="7" fill="#1db954"/>
+      <text x="40" y="18" font-weight="500">Spotify</text>
+      <text x="356" y="18" text-anchor="end" fill="#8f8f9d" font-size="12">35</text>
+      <rect x="40" y="30" width="316" height="4" rx="2" fill="#ffffff" fill-opacity="0.13"/>
+      <rect x="40" y="30" width="110" height="4" rx="2" fill="url(#fill)"/>
+      <circle cx="150" cy="32" r="7" fill="#ffffff"/>
+      <rect x="40" y="40" width="140" height="2" rx="1" fill="#8b5cf6" fill-opacity="0.75"/>
+    </g>
+  </g>
+</svg>

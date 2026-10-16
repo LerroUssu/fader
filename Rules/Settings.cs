@@ -59,6 +59,7 @@ public sealed class Settings
     public string Accent { get; set; } = "#8B5CF6";
 
     public bool FirstRunDone { get; set; } = false;
+    public bool AutoCheckUpdates { get; set; } = true;
 
     public static Settings Load()
     {

@@ -18,12 +18,17 @@ public sealed class TrayIcon : IDisposable
     private readonly Window _anchor;
     private readonly ContextMenu _menu;
     private readonly MenuItem _autoStartItem;
+    private readonly MenuItem _updateItem;
+    private readonly Separator _updateSeparator;
 
     public event Action? LeftClick;
     public event Action? OpenRequested;
     public event Action? SettingsRequested;
     public event Action? QuitRequested;
     public event Action<bool>? AutoStartToggled;
+    public event Action? UpdateRequested;
+    public event Action? CheckUpdatesRequested;
+    public event Action? BalloonClicked;
     public Func<bool> IsAutoStart { get; set; } = () => false;
 
     public TrayIcon()
@@ -35,6 +40,7 @@ public sealed class TrayIcon : IDisposable
             if (e.Button == WF.MouseButtons.Left) LeftClick?.Invoke();
             else if (e.Button == WF.MouseButtons.Right) ShowMenu();
         };
+        _icon.BalloonTipClicked += (_, _) => BalloonClicked?.Invoke();
 
         // Invisible 1×1 window: a WPF ContextMenu needs an owning window to take focus, otherwise it never closes.
         _anchor = new Window
@@ -50,6 +56,11 @@ public sealed class TrayIcon : IDisposable
             Placement = PlacementMode.MousePoint,
             StaysOpen = false,
         };
+        _updateItem = AddItem("Update", () => UpdateRequested?.Invoke());
+        _updateItem.FontWeight = FontWeights.SemiBold;
+        _updateItem.Visibility = Visibility.Collapsed;
+        _updateSeparator = new Separator { Style = (Style)Application.Current.FindResource("DarkMenuSeparator"), Visibility = Visibility.Collapsed };
+        _menu.Items.Add(_updateSeparator);
         AddItem("Open mixer", () => OpenRequested?.Invoke());
         AddItem("Settings…", () => SettingsRequested?.Invoke());
         _menu.Items.Add(new Separator { Style = (Style)Application.Current.FindResource("DarkMenuSeparator") });
@@ -59,6 +70,7 @@ public sealed class TrayIcon : IDisposable
             _autoStartItem.IsChecked = on;
             AutoStartToggled?.Invoke(on);
         });
+        AddItem("Check for updates", () => CheckUpdatesRequested?.Invoke());
         _menu.Items.Add(new Separator { Style = (Style)Application.Current.FindResource("DarkMenuSeparator") });
         AddItem("Quit Fader", () => QuitRequested?.Invoke());
         _menu.Closed += (_, _) => _anchor.Hide();
@@ -88,6 +100,16 @@ public sealed class TrayIcon : IDisposable
             _menu.IsOpen = true;
         }
         catch (Exception ex) { Log.Error("tray menu", ex); }
+    }
+
+    /// <summary>Shows "Update to vX" at the top of the menu; null hides it.</summary>
+    public void SetUpdate(string? label)
+    {
+        _updateItem.Header = label ?? "Update";
+        var v = label == null ? Visibility.Collapsed : Visibility.Visible;
+        _updateItem.Visibility = v;
+        _updateSeparator.Visibility = v;
+        _icon.Text = label == null ? "Fader — per-app volume" : $"Fader — {label.ToLowerInvariant()} available";
     }
 
     public void Balloon(string title, string text)

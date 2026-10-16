@@ -9,10 +9,10 @@ public partial class SettingsWindow : Window
 {
     private readonly SettingsViewModel _vm;
 
-    public SettingsWindow(Settings settings, AudioSessionService service, Action changed)
+    public SettingsWindow(Settings settings, AudioSessionService service, UpdateService updates, Action changed)
     {
         InitializeComponent();
-        _vm = new SettingsViewModel(settings, service, changed);
+        _vm = new SettingsViewModel(settings, service, updates, changed);
         DataContext = _vm;
         MaxHeight = Math.Max(400, SystemParameters.WorkArea.Height - 20);
         MaxWidth = Math.Max(480, SystemParameters.WorkArea.Width - 20);
@@ -23,6 +23,10 @@ public partial class SettingsWindow : Window
         UpdateNoApps();
         PreviewKeyDown += (_, e) => { if (e.Key == Key.Escape && !HotkeyBox.IsKeyboardFocused) Close(); };
     }
+
+    private void CheckUpdates_Click(object sender, RoutedEventArgs e) => _ = _vm.Updates.CheckAsync(manual: true);
+    private void InstallUpdate_Click(object sender, RoutedEventArgs e) => _ = _vm.Updates.InstallAsync();
+    private void ReleasePage_Click(object sender, RoutedEventArgs e) => _vm.Updates.OpenReleasePage();
 
     private void UpdateNoApps() => NoAppsText.Visibility = _vm.KnownApps.All(a => a.IsSystemSounds) ? Visibility.Visible : Visibility.Collapsed;
 

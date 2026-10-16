@@ -30,14 +30,26 @@ Run `Fader.exe`. It lives in the tray (no window). Then:
 | **Drag the mixer** anywhere (or click its pin) | It stays open until you press Esc, click the pin, or toggle it from the tray. |
 | **Level pill position** (Settings) | The pill always appears at the same spot: top, center or bottom of the screen the mouse is on (bottom by default). |
 | Launch an app that plays sound | The moment Windows creates its audio session, Fader sets it to the **start level** (50 % by default). Per-app rules give some apps their own start level or leave them alone. |
-| Right-click the tray icon | Open mixer, Settings, Start with Windows, Quit. |
+| Right-click the tray icon | Open mixer, Settings, Start with Windows, Check for updates, Quit. When a new version is out, **Update to vX** appears at the top. |
 
 Settings (gear in the flyout, or the tray menu) let you change the modifier (Alt / Ctrl+Alt /
 Shift+Alt / Ctrl+Shift), the wheel step, the hotkey, the default start level, and
 per-app rules (e.g. Chrome starts at 40 %, Spotify is left alone).
 
 Command line: `Fader.exe --quit` asks a running Fader to exit cleanly; `Fader.exe --autostart`
-starts it and switches "start with Windows" on.
+starts it and switches "start with Windows" on; `Fader.exe --update-now` starts it and installs the
+latest release right away if there is one.
+
+### Updates
+
+Fader checks this repo's [releases](https://github.com/LerroUssu/fader/releases) 45 s after it
+starts and then twice a day (one anonymous GitHub API call, nothing sent; turn it off in
+Settings → Updates). When a newer version exists, a notification says so and the tray menu gets
+**Update to vX**. Clicking it downloads the matching exe (portable builds update to the portable
+exe, small builds to the small one) next to the current one, checks its size and SHA-256 against
+GitHub, renames the running exe to `Fader.exe.old`, moves the new one in and restarts. The `.old`
+file is deleted on the next start. Settings and "start with Windows" are untouched. If the folder
+is read-only, it says so and the release page has the download.
 
 ### Volume vs loudness
 

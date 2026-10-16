@@ -16,8 +16,9 @@ public sealed class SettingsViewModel : ObservableObject, IDisposable
     public ObservableCollection<AppRule> Rules { get; }
     public ObservableCollection<AppAudio> KnownApps { get; }
 
-    public SettingsViewModel(Settings settings, AudioSessionService service, Action changed)
+    public SettingsViewModel(Settings settings, AudioSessionService service, UpdateService updates, Action changed)
     {
+        Updates = updates;
         _s = settings;
         _changed = changed;
         _ruleChanged = (_, _) => _changed();
@@ -82,6 +83,11 @@ public sealed class SettingsViewModel : ObservableObject, IDisposable
 
     public string Hotkey { get => _s.Hotkey; set { _s.Hotkey = value; Raise(); _changed(); } }
     public bool AutoStartEnabled { get => AutoStart.IsEnabled(); set { AutoStart.Set(value); Raise(); } }
+
+    // ---- updates -------------------------------------------------------------------------
+
+    public UpdateService Updates { get; }
+    public bool AutoCheckUpdates { get => _s.AutoCheckUpdates; set { _s.AutoCheckUpdates = value; Raise(); _changed(); } }
 
     // ---- new apps ------------------------------------------------------------------------
 

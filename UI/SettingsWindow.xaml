@@ -85,6 +85,30 @@
                     <TextBlock Style="{StaticResource DimText}" FontSize="11" Foreground="{StaticResource TextFaintBrush}" TextWrapping="Wrap" Margin="0,8,0,0"
                                Text="Drag the mixer panel anywhere to keep it open; the pin button does the same. Esc or the pin closes it again."/>
 
+                    <!-- ===== updates ===== -->
+                    <TextBlock Text="UPDATES" Style="{StaticResource SectionTitle}"/>
+                    <Border Background="{StaticResource ElevatedBrush}" BorderBrush="{StaticResource HairlineBrush}" BorderThickness="1" CornerRadius="12" Padding="14,12" Margin="0,0,0,12">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="Auto"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock Text="{Binding Updates.Status}" Style="{StaticResource BodyText}" TextWrapping="Wrap" VerticalAlignment="Center" Margin="0,0,12,0"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" VerticalAlignment="Center">
+                                <Button Style="{StaticResource PillButton}" Content="What's new" Click="ReleasePage_Click" Margin="0,0,8,0"
+                                        Visibility="{Binding Updates.HasUpdate, Converter={StaticResource BoolToVis}}"/>
+                                <Button Style="{StaticResource PillButton}" Content="{Binding Updates.UpdateLabel}" Click="InstallUpdate_Click"
+                                        Background="{DynamicResource AccentBrush}" Foreground="White" IsEnabled="{Binding Updates.NotBusy}"
+                                        Visibility="{Binding Updates.HasUpdate, Converter={StaticResource BoolToVis}}"/>
+                                <Button Style="{StaticResource PillButton}" Content="Check for updates" Click="CheckUpdates_Click" IsEnabled="{Binding Updates.NotBusy}"
+                                        Visibility="{Binding Updates.NoUpdate, Converter={StaticResource BoolToVis}}"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+                    <CheckBox Style="{StaticResource Switch}" IsChecked="{Binding AutoCheckUpdates}" Content="Check for new versions automatically (asks GitHub twice a day, nothing is sent)"/>
+                    <TextBlock Style="{StaticResource DimText}" FontSize="11" Foreground="{StaticResource TextFaintBrush}" TextWrapping="Wrap" Margin="0,8,0,0"
+                               Text="Updates come from the public GitHub releases. Fader downloads the new exe next to the current one, checks its checksum, swaps them and restarts. Your settings stay."/>
+
                     <!-- ===== new apps ===== -->
                     <TextBlock Text="NEW APPS" Style="{StaticResource SectionTitle}"/>
                     <TextBlock Style="{StaticResource DimText}" TextWrapping="Wrap" Margin="0,0,0,12"

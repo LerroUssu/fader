@@ -23,6 +23,7 @@ public partial class App : Application
     private HotkeyManager? _hotkey;
     private GestureController? _gesture;
     private TaskbarTracker? _taskbar;
+    private UpdateService? _updates;
     private EventWaitHandle? _quitSignal;
     private System.Windows.Threading.DispatcherTimer? _saveTimer;
     private string _appliedHotkey = string.Empty;
@@ -38,7 +39,7 @@ public partial class App : Application
         if (e.Args.Length > 0 && e.Args[0].Equals("--probe", StringComparison.OrdinalIgnoreCase))
         {
             int code = 1;
-            try { code = Probe.Run(e.Args.Length > 1 ? e.Args[1] : "fader-probe.json"); }
+            try { code = Probe.Run(e.Args.Length > 1 && !e.Args[1].StartsWith("--") ? e.Args[1] : "fader-probe.json", e.Args.Any(a => a.Equals("--download", StringComparison.OrdinalIgnoreCase))); }
             catch (Exception ex) { Log.Error("probe", ex); }
             Shutdown(code);
             return;
@@ -46,6 +47,12 @@ public partial class App : Application
 
         bool wantQuit = e.Args.Any(a => a.Equals("--quit", StringComparison.OrdinalIgnoreCase));
         bool wantAutostart = e.Args.Any(a => a.Equals("--autostart", StringComparison.OrdinalIgnoreCase));
+        bool quiet = e.Args.Any(a => a.Equals("--quiet", StringComparison.OrdinalIgnoreCase));
+        bool updateNow = e.Args.Any(a => a.Equals("--update-now", StringComparison.OrdinalIgnoreCase));
+        int updatedIdx = Array.FindIndex(e.Args, a => a.Equals("--updated", StringComparison.OrdinalIgnoreCase));
+        bool justUpdated = updatedIdx >= 0;
+        // Started by the updater: let the previous version finish exiting before taking the single-instance lock.
+        if (justUpdated && updatedIdx + 1 < e.Args.Length && int.TryParse(e.Args[updatedIdx + 1], out int previousPid)) Updater.AfterUpdate(previousPid);
 
         // Single instance: a second launch asks the first one to open the mixer (or, with --quit, to exit cleanly).
         _mutex = new Mutex(true, @"Local\Fader.SingleInstance", out bool isFirst);
@@ -98,6 +105,22 @@ public partial class App : Application
         _tray.QuitRequested += () => Shutdown();
         _tray.AutoStartToggled += on => AutoStart.Set(on);
 
+        _updates = new UpdateService(Dispatcher, () => _settings.AutoCheckUpdates);
+        _updates.Found += info =>
+        {
+            _tray?.SetUpdate(_updates.UpdateLabel);
+            _tray?.Balloon($"Fader {info.Version.ToString(3)} is available", "Right-click the tray icon → " + _updates.UpdateLabel + ", or click here for details.");
+        };
+        _updates.RestartRequested += () => Shutdown();
+        _tray.UpdateRequested += () => _ = _updates.InstallAsync();
+        _tray.BalloonClicked += () => { if (_updates.HasUpdate) OpenSettings(); };
+        _tray.CheckUpdatesRequested += async () =>
+        {
+            await _updates.CheckAsync(manual: true);
+            if (!_updates.HasUpdate) _tray?.Balloon("Fader is up to date", _updates.Status);
+        };
+        Updater.CleanupLeftovers();
+
         _rules.Applied += (app, what) => { if (_settings.ShowOsd) _osd.ShowMessage(app.Name, app.Icon, what, IntPtr.Zero, app.VolumePercent); };
 
         if (!_settings.FirstRunDone)
@@ -108,6 +131,13 @@ public partial class App : Application
             _settings.Save();
         }
         if (wantAutostart) AutoStart.Set(true);
+        if (justUpdated && !quiet) _tray.Balloon($"Fader updated to v{_updates.Current}", "Everything is where you left it. See what's new on the release page.");
+        if (updateNow) Dispatcher.BeginInvoke(async () =>
+        {
+            await _updates.CheckAsync(manual: true);
+            if (_updates.HasUpdate) await _updates.InstallAsync(quiet: true);
+            else Log.Write("[update] --update-now: " + _updates.Status);
+        });
         Log.Write($"[app] started v{typeof(App).Assembly.GetName().Version} hook={_gesture.HookInstalled} data={Log.Dir}");
     }
 
@@ -130,7 +160,7 @@ public partial class App : Application
         if (_service == null) return;
         if (_settingsWindow == null)
         {
-            _settingsWindow = new SettingsWindow(_settings, _service, OnSettingsChanged);
+            _settingsWindow = new SettingsWindow(_settings, _service, _updates!, OnSettingsChanged);
             _settingsWindow.Closed += (_, _) => _settingsWindow = null;
         }
         _settingsWindow.Show();

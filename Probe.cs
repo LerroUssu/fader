@@ -17,7 +17,7 @@ namespace Fader;
 /// </summary>
 public static class Probe
 {
-    public static int Run(string outPath)
+    public static int Run(string outPath, bool download = false)
     {
         var report = new Dictionary<string, object?>();
         int failures = 0;
@@ -119,6 +119,49 @@ public static class Probe
             };
             tracker.Dispose();
             return result;
+        });
+
+        Check("updateTags", () =>
+        {
+            var cases = new[] { "v0.3.0", "0.3.1", "v1.2", "v2.0.0-beta", "nope", "" };
+            return cases.Select(c => Updater.TryParseTag(c, out var v) ? $"{c} -> {v.ToString(3)}" : $"{c} -> invalid").ToList();
+        });
+        Check("updateSwap", () =>
+        {
+            string dir = Path.Combine(Path.GetTempPath(), "fader-swap-" + Guid.NewGuid().ToString("N"));
+            Directory.CreateDirectory(dir);
+            try
+            {
+                string exe = Path.Combine(dir, "Fader.exe"), staged = Path.Combine(dir, "Fader.update.exe");
+                File.WriteAllText(exe, "old"); File.WriteAllText(staged, "new");
+                Updater.Swap(exe, staged);
+                bool ok = File.ReadAllText(exe) == "new" && File.ReadAllText(exe + ".old") == "old" && !File.Exists(staged);
+                if (!ok) throw new Exception("swap produced the wrong files");
+                return "ok";
+            }
+            finally { try { Directory.Delete(dir, true); } catch { } }
+        });
+        Check("update", () =>
+        {
+            // newerThan 0.0.0: always describe the latest release, whatever this build's version is.
+            var latest = Task.Run(() => Updater.CheckAsync(default, new Version(0, 0, 0))).GetAwaiter().GetResult();
+            object? downloaded = null;
+            if (download && latest?.DownloadUrl != null)
+            {
+                string dest = Path.Combine(Path.GetTempPath(), "fader-dl-" + Guid.NewGuid().ToString("N") + ".exe");
+                try
+                {
+                    Task.Run(() => Updater.DownloadAsync(latest, null, default, dest)).GetAwaiter().GetResult();
+                    downloaded = new { bytes = new FileInfo(dest).Length, verifiedSha256 = latest.Sha256 != null };
+                }
+                finally { try { File.Delete(dest); } catch { } }
+            }
+            return new
+            {
+                current = Updater.Current.ToString(3), selfContained = Updater.IsSelfContained, assetSuffix = Updater.AssetSuffix,
+                latest = latest?.Tag, asset = latest?.AssetName, size = latest?.Size, sha256 = latest?.Sha256,
+                newer = latest != null && latest.Version > Updater.Current, downloaded,
+            };
         });
 
         try { svc?.Dispose(); } catch (Exception ex) { report["disposeError"] = ex.Message; }

@@ -9,7 +9,7 @@
     <UseWindowsForms>true</UseWindowsForms>
     <AssemblyName>Fader</AssemblyName>
     <RootNamespace>Fader</RootNamespace>
-    <Version>0.2.2</Version>
+    <Version>0.3.0</Version>
     <ApplicationIcon>assets\fader.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
@@ -18,6 +18,8 @@
     <DebugType>embedded</DebugType>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
     <NoWarn>$(NoWarn);CA1416;WFO1000;WFAC010</NoWarn>
+    <!-- The portable (self-contained) build updates itself from the portable asset, the small one from the small asset. -->
+    <DefineConstants Condition="'$(SelfContained)' == 'true'">$(DefineConstants);SELF_CONTAINED</DefineConstants>
   </PropertyGroup>
 
   <!-- WinForms is only used for the tray icon; keep its namespaces out of the implicit usings

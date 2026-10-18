@@ -1,24 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-label="Fader — per-app volume for Windows, done right">
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="320" viewBox="0 0 1200 320" role="img" aria-label="Otto — per-app volume for Windows, done right">
   <defs>
     <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#0d0d14"/>
-      <stop offset="1" stop-color="#0a0a0e"/>
+      <stop offset="0" stop-color="#0b1112"/>
+      <stop offset="1" stop-color="#0a0d0d"/>
     </linearGradient>
     <radialGradient id="glow" cx="0.22" cy="0.1" r="0.6">
-      <stop offset="0" stop-color="#8b5cf6" stop-opacity="0.28"/>
-      <stop offset="1" stop-color="#8b5cf6" stop-opacity="0"/>
+      <stop offset="0" stop-color="#46a873" stop-opacity="0.28"/>
+      <stop offset="1" stop-color="#46a873" stop-opacity="0"/>
     </radialGradient>
     <linearGradient id="tile" x1="0" y1="0" x2="1" y2="1">
-      <stop offset="0" stop-color="#8b5cf6"/>
-      <stop offset="1" stop-color="#6d3fe0"/>
+      <stop offset="0" stop-color="#46a873"/>
+      <stop offset="1" stop-color="#245e40"/>
     </linearGradient>
     <linearGradient id="text" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#7c4def"/>
-      <stop offset="1" stop-color="#a78bfa"/>
+      <stop offset="0" stop-color="#2f8a5a"/>
+      <stop offset="1" stop-color="#7fd3a3"/>
     </linearGradient>
     <linearGradient id="fill" x1="0" y1="0" x2="1" y2="0">
-      <stop offset="0" stop-color="#7c4def"/>
-      <stop offset="1" stop-color="#a78bfa"/>
+      <stop offset="0" stop-color="#2f8a5a"/>
+      <stop offset="1" stop-color="#7fd3a3"/>
     </linearGradient>
   </defs>
   <rect width="1200" height="320" rx="24" fill="url(#bg)"/>
@@ -41,38 +41,38 @@
   </g>
 
   <!-- wordmark -->
-  <text x="272" y="150" font-family="Figtree, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="84" font-weight="800" letter-spacing="-3" fill="#a78bfa">Fader</text>
-  <text x="276" y="196" font-family="Figtree, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" fill="#b4b4c2">Per-app volume for Windows, done right.</text>
+  <text x="272" y="150" font-family="Figtree, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="84" font-weight="800" letter-spacing="-3" fill="#7fd3a3">Otto</text>
+  <text x="276" y="196" font-family="Figtree, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="24" fill="#b4c0bd">Per-app volume for Windows, done right.</text>
 
   <!-- mini mixer rows -->
-  <g transform="translate(760,70)" font-family="Figtree, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#f4f4f8">
-    <rect x="-20" y="-18" width="400" height="216" rx="18" fill="#111117" stroke="#ffffff" stroke-opacity="0.08"/>
+  <g transform="translate(760,70)" font-family="Figtree, 'Segoe UI', Helvetica, Arial, sans-serif" font-size="14" fill="#f2f5f4">
+    <rect x="-20" y="-18" width="400" height="216" rx="18" fill="#0f1314" stroke="#ffffff" stroke-opacity="0.08"/>
     <g>
       <rect x="0" y="4" width="28" height="28" rx="7" fill="#ea4335"/>
       <text x="40" y="18" font-weight="500">Google Chrome</text>
-      <text x="356" y="18" text-anchor="end" fill="#8f8f9d" font-size="12">58</text>
+      <text x="356" y="18" text-anchor="end" fill="#8c979a" font-size="12">58</text>
       <rect x="40" y="30" width="316" height="4" rx="2" fill="#ffffff" fill-opacity="0.13"/>
       <rect x="40" y="30" width="183" height="4" rx="2" fill="url(#fill)"/>
       <circle cx="223" cy="32" r="7" fill="#ffffff"/>
-      <rect x="40" y="40" width="98" height="2" rx="1" fill="#8b5cf6" fill-opacity="0.75"/>
+      <rect x="40" y="40" width="98" height="2" rx="1" fill="#46a873" fill-opacity="0.75"/>
     </g>
     <g transform="translate(0,64)">
       <rect x="0" y="4" width="28" height="28" rx="7" fill="#5865f2"/>
       <text x="40" y="18" font-weight="500">Discord</text>
-      <text x="356" y="18" text-anchor="end" fill="#8f8f9d" font-size="12">80</text>
+      <text x="356" y="18" text-anchor="end" fill="#8c979a" font-size="12">80</text>
       <rect x="40" y="30" width="316" height="4" rx="2" fill="#ffffff" fill-opacity="0.13"/>
       <rect x="40" y="30" width="253" height="4" rx="2" fill="url(#fill)"/>
       <circle cx="293" cy="32" r="7" fill="#ffffff"/>
-      <rect x="40" y="40" width="38" height="2" rx="1" fill="#8b5cf6" fill-opacity="0.75"/>
+      <rect x="40" y="40" width="38" height="2" rx="1" fill="#46a873" fill-opacity="0.75"/>
     </g>
     <g transform="translate(0,128)">
       <rect x="0" y="4" width="28" height="28" rx="7" fill="#1db954"/>
       <text x="40" y="18" font-weight="500">Spotify</text>
-      <text x="356" y="18" text-anchor="end" fill="#8f8f9d" font-size="12">35</text>
+      <text x="356" y="18" text-anchor="end" fill="#8c979a" font-size="12">35</text>
       <rect x="40" y="30" width="316" height="4" rx="2" fill="#ffffff" fill-opacity="0.13"/>
       <rect x="40" y="30" width="110" height="4" rx="2" fill="url(#fill)"/>
       <circle cx="150" cy="32" r="7" fill="#ffffff"/>
-      <rect x="40" y="40" width="140" height="2" rx="1" fill="#8b5cf6" fill-opacity="0.75"/>
+      <rect x="40" y="40" width="140" height="2" rx="1" fill="#46a873" fill-opacity="0.75"/>
     </g>
   </g>
 </svg>

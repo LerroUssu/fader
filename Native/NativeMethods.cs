@@ -1,9 +1,9 @@
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace Fader.Native;
+namespace Otto.Native;
 
-/// <summary>Raw Win32 / shell interop used by Fader. Kept in one place on purpose.</summary>
+/// <summary>Raw Win32 / shell interop used by Otto. Kept in one place on purpose.</summary>
 public static class NativeMethods
 {
     // ---- structs -------------------------------------------------------------------------

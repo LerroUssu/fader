@@ -1,13 +1,13 @@
 using System.Windows;
 using System.Windows.Media;
-using Fader.Audio;
-using Fader.Native;
-using Fader.Rules;
-using Fader.Tray;
-using Fader.UI;
-using static Fader.Native.NativeMethods;
+using Otto.Audio;
+using Otto.Native;
+using Otto.Rules;
+using Otto.Tray;
+using Otto.UI;
+using static Otto.Native.NativeMethods;
 
-namespace Fader;
+namespace Otto;
 
 public partial class App : Application
 {
@@ -55,9 +55,9 @@ public partial class App : Application
         if (justUpdated && updatedIdx + 1 < e.Args.Length && int.TryParse(e.Args[updatedIdx + 1], out int previousPid)) Updater.AfterUpdate(previousPid);
 
         // Single instance: a second launch asks the first one to open the mixer (or, with --quit, to exit cleanly).
-        _mutex = new Mutex(true, @"Local\Fader.SingleInstance", out bool isFirst);
-        _showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\Fader.ShowFlyout");
-        _quitSignal = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\Fader.Quit");
+        _mutex = new Mutex(true, @"Local\Otto.SingleInstance", out bool isFirst);
+        _showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\Otto.ShowFlyout");
+        _quitSignal = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\Otto.Quit");
         if (!isFirst)
         {
             if (wantQuit) _quitSignal.Set();
@@ -75,9 +75,10 @@ public partial class App : Application
                 if (which == 1) { Dispatcher.BeginInvoke(() => Shutdown()); return; }
                 Dispatcher.BeginInvoke(ToggleFlyout);
             }
-        }) { IsBackground = true, Name = "Fader.ShowSignal" };
+        }) { IsBackground = true, Name = "Otto.ShowSignal" };
         signalThread.Start();
 
+        MigrateFromFader();
         _settings = Settings.Load();
         ApplyAccent(_settings.Accent);
 
@@ -109,7 +110,7 @@ public partial class App : Application
         _updates.Found += info =>
         {
             _tray?.SetUpdate(_updates.UpdateLabel);
-            _tray?.Balloon($"Fader {info.Version.ToString(3)} is available", "Right-click the tray icon → " + _updates.UpdateLabel + ", or click here for details.");
+            _tray?.Balloon($"Otto {info.Version.ToString(3)} is available", "Right-click the tray icon → " + _updates.UpdateLabel + ", or click here for details.");
         };
         _updates.RestartRequested += () => Shutdown();
         _tray.UpdateRequested += () => _ = _updates.InstallAsync();
@@ -117,7 +118,7 @@ public partial class App : Application
         _tray.CheckUpdatesRequested += async () =>
         {
             await _updates.CheckAsync(manual: true);
-            if (!_updates.HasUpdate) _tray?.Balloon("Fader is up to date", _updates.Status);
+            if (!_updates.HasUpdate) _tray?.Balloon("Otto is up to date", _updates.Status);
         };
         Updater.CleanupLeftovers();
 
@@ -125,13 +126,13 @@ public partial class App : Application
 
         if (!_settings.FirstRunDone)
         {
-            _tray.Balloon("Fader is running in the tray",
+            _tray.Balloon("Otto is running in the tray",
                 $"Click the Windows speaker icon or press {_settings.Hotkey} for the mixer. Scroll over an app's taskbar button, or hold {_settings.ModifierLabel} and scroll over its window, to change its volume.");
             _settings.FirstRunDone = true;
             _settings.Save();
         }
         if (wantAutostart) AutoStart.Set(true);
-        if (justUpdated && !quiet) _tray.Balloon($"Fader updated to v{_updates.Current}", "Everything is where you left it. See what's new on the release page.");
+        if (justUpdated && !quiet) _tray.Balloon($"Otto updated to v{_updates.Current}", "Everything is where you left it. See what's new on the release page.");
         if (updateNow) Dispatcher.BeginInvoke(async () =>
         {
             await _updates.CheckAsync(manual: true);
@@ -139,6 +140,35 @@ public partial class App : Application
             else Log.Write("[update] --update-now: " + _updates.Status);
         });
         Log.Write($"[app] started v{typeof(App).Assembly.GetName().Version} hook={_gesture.HookInstalled} data={Log.Dir}");
+    }
+
+    /// <summary>
+    /// Until 0.4.0 the app was called Fader. An updated copy still runs as Fader.exe: rename it to
+    /// Otto.exe (Windows allows renaming a running exe) and move its start-with-Windows entry.
+    /// </summary>
+    private static void MigrateFromFader()
+    {
+        try
+        {
+            string exe = Updater.ExePath;
+            string dir = System.IO.Path.GetDirectoryName(exe)!;
+            if (System.IO.Path.GetFileName(exe).Equals("Fader.exe", StringComparison.OrdinalIgnoreCase))
+            {
+                string target = System.IO.Path.Combine(dir, "Otto.exe");
+                if (!System.IO.File.Exists(target))
+                {
+                    System.IO.File.Move(exe, target);
+                    Updater.ExePath = target;
+                    Log.Write($"[migrate] renamed {exe} → {target}");
+                }
+            }
+            foreach (var leftover in new[] { "Fader.exe.old", "Fader.update.exe" })
+            {
+                try { System.IO.File.Delete(System.IO.Path.Combine(dir, leftover)); } catch { }
+            }
+        }
+        catch (Exception ex) { Log.Error("migrate exe", ex); }
+        AutoStart.MigrateLegacy();
     }
 
     private void CreateFlyout()

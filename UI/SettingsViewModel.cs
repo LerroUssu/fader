@@ -1,9 +1,9 @@
 using System.Collections.ObjectModel;
-using Fader.Audio;
-using Fader.Native;
-using Fader.Rules;
+using Otto.Audio;
+using Otto.Native;
+using Otto.Rules;
 
-namespace Fader.UI;
+namespace Otto.UI;
 
 /// <summary>Binding surface for the settings window. Every change writes through to <see cref="Settings"/> and triggers a save.</summary>
 public sealed class SettingsViewModel : ObservableObject, IDisposable

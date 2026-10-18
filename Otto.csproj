@@ -7,10 +7,10 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <UseWPF>true</UseWPF>
     <UseWindowsForms>true</UseWindowsForms>
-    <AssemblyName>Fader</AssemblyName>
-    <RootNamespace>Fader</RootNamespace>
-    <Version>0.3.0</Version>
-    <ApplicationIcon>assets\fader.ico</ApplicationIcon>
+    <AssemblyName>Otto</AssemblyName>
+    <RootNamespace>Otto</RootNamespace>
+    <Version>0.4.0</Version>
+    <ApplicationIcon>assets\otto.ico</ApplicationIcon>
     <ApplicationManifest>app.manifest</ApplicationManifest>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
     <LangVersion>latest</LangVersion>
@@ -35,7 +35,7 @@
 
   <ItemGroup>
     <Resource Include="assets\fonts\*.ttf" />
-    <Resource Include="assets\fader-256.png" />
+    <Resource Include="assets\otto-256.png" />
   </ItemGroup>
 
 </Project>

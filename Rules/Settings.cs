@@ -1,9 +1,9 @@
 using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using static Fader.Native.NativeMethods;
+using static Otto.Native.NativeMethods;
 
-namespace Fader.Rules;
+namespace Otto.Rules;
 
 public enum ScrollModifier { Alt, CtrlAlt, ShiftAlt, CtrlShift }
 public enum OsdPosition { Top, Center, Bottom }
@@ -56,7 +56,8 @@ public sealed class Settings
 
     // Flyout
     public string Hotkey { get; set; } = "Ctrl+Alt+V";
-    public string Accent { get; set; } = "#8B5CF6";
+    public string Accent { get; set; } = DefaultAccent;
+    public const string DefaultAccent = "#46A873"; // Otto's green
 
     public bool FirstRunDone { get; set; } = false;
     public bool AutoCheckUpdates { get; set; } = true;
@@ -66,7 +67,11 @@ public sealed class Settings
         try
         {
             if (File.Exists(FilePath))
-                return JsonSerializer.Deserialize<Settings>(File.ReadAllText(FilePath), Options) ?? new Settings();
+            {
+                var s = JsonSerializer.Deserialize<Settings>(File.ReadAllText(FilePath), Options) ?? new Settings();
+                if (string.Equals(s.Accent, "#8B5CF6", StringComparison.OrdinalIgnoreCase)) s.Accent = DefaultAccent; // Fader's old violet default
+                return s;
+            }
         }
         catch (Exception ex) { Log.Error("settings load", ex); }
         return new Settings();

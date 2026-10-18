@@ -1,9 +1,9 @@
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
-using static Fader.Native.NativeMethods;
+using static Otto.Native.NativeMethods;
 
-namespace Fader.Audio;
+namespace Otto.Audio;
 
 /// <summary>What we know about the process behind an audio session.</summary>
 public sealed record ProcessInfo(uint Pid, string? ExePath, string? ExeName, string? Description, DateTime? StartTime, bool Alive)

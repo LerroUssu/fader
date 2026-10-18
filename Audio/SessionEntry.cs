@@ -1,7 +1,7 @@
 using NAudio.CoreAudioApi;
 using NAudio.CoreAudioApi.Interfaces;
 
-namespace Fader.Audio;
+namespace Otto.Audio;
 
 /// <summary>One WASAPI audio session (one process ↔ one stream group). Several of these make up an <see cref="AppAudio"/>.</summary>
 public sealed class SessionEntry : IDisposable
@@ -62,7 +62,7 @@ public sealed class SessionEntry : IDisposable
         }
     }
 
-    /// <summary>True when a volume reported by Windows is the echo of a value Fader itself set recently.</summary>
+    /// <summary>True when a volume reported by Windows is the echo of a value Otto itself set recently.</summary>
     public bool IsOurEcho(float reported)
     {
         lock (_pending)

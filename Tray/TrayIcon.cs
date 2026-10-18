@@ -6,9 +6,9 @@ using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
 using System.Windows.Interop;
 using WF = System.Windows.Forms;
-using static Fader.Native.NativeMethods;
+using static Otto.Native.NativeMethods;
 
-namespace Fader.Tray;
+namespace Otto.Tray;
 
 /// <summary>Notification-area icon (WinForms NotifyIcon) with a WPF-styled context menu.</summary>
 public sealed class TrayIcon : IDisposable
@@ -34,7 +34,7 @@ public sealed class TrayIcon : IDisposable
     public TrayIcon()
     {
         _drawnIcon = DrawIcon();
-        _icon = new WF.NotifyIcon { Text = "Fader — per-app volume", Icon = _drawnIcon, Visible = true };
+        _icon = new WF.NotifyIcon { Text = "Otto — per-app volume", Icon = _drawnIcon, Visible = true };
         _icon.MouseUp += (_, e) =>
         {
             if (e.Button == WF.MouseButtons.Left) LeftClick?.Invoke();
@@ -72,7 +72,7 @@ public sealed class TrayIcon : IDisposable
         });
         AddItem("Check for updates", () => CheckUpdatesRequested?.Invoke());
         _menu.Items.Add(new Separator { Style = (Style)Application.Current.FindResource("DarkMenuSeparator") });
-        AddItem("Quit Fader", () => QuitRequested?.Invoke());
+        AddItem("Quit Otto", () => QuitRequested?.Invoke());
         _menu.Closed += (_, _) => _anchor.Hide();
     }
 
@@ -109,7 +109,7 @@ public sealed class TrayIcon : IDisposable
         var v = label == null ? Visibility.Collapsed : Visibility.Visible;
         _updateItem.Visibility = v;
         _updateSeparator.Visibility = v;
-        _icon.Text = label == null ? "Fader — per-app volume" : $"Fader — {label.ToLowerInvariant()} available";
+        _icon.Text = label == null ? "Otto — per-app volume" : $"Otto — {label.ToLowerInvariant()} available";
     }
 
     public void Balloon(string title, string text)
@@ -117,7 +117,7 @@ public sealed class TrayIcon : IDisposable
         try { _icon.ShowBalloonTip(6000, title, text, WF.ToolTipIcon.None); } catch { }
     }
 
-    /// <summary>Violet rounded square with three faders, drawn at the system's small-icon size so it stays crisp per DPI.</summary>
+    /// <summary>Green rounded square (Otto's cloak) with three faders, drawn at the system's small-icon size so it stays crisp per DPI.</summary>
     private static Icon DrawIcon()
     {
         int size = Math.Max(16, WF.SystemInformation.SmallIconSize.Width);
@@ -127,7 +127,7 @@ public sealed class TrayIcon : IDisposable
             g.SmoothingMode = SmoothingMode.AntiAlias;
             g.Clear(Color.Transparent);
             using var path = RoundedRect(new RectangleF(0.5f, 0.5f, size - 1, size - 1), size * 0.26f);
-            using var bg = new LinearGradientBrush(new PointF(0, 0), new PointF(size, size), Color.FromArgb(0x8B, 0x5C, 0xF6), Color.FromArgb(0x6D, 0x3F, 0xE0));
+            using var bg = new LinearGradientBrush(new PointF(0, 0), new PointF(size, size), Color.FromArgb(0x46, 0xA8, 0x73), Color.FromArgb(0x24, 0x5E, 0x40));
             g.FillPath(bg, path);
 
             float[] xs = { 0.30f, 0.50f, 0.70f };

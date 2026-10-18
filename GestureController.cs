@@ -1,18 +1,18 @@
 using System.Windows.Threading;
-using Fader.Audio;
-using Fader.Native;
-using Fader.Rules;
-using Fader.UI;
-using static Fader.Native.NativeMethods;
+using Otto.Audio;
+using Otto.Native;
+using Otto.Rules;
+using Otto.UI;
+using static Otto.Native.NativeMethods;
 
-namespace Fader;
+namespace Otto;
 
 /// <summary>
 /// Everything driven by the mouse hook:
 ///  - modifier + wheel over any window → that app's volume (OSD pill on the window);
 ///  - wheel over a taskbar button, no modifier → that app's volume; over the tray/clock/empty taskbar → master;
 ///  - hovering a taskbar button → its level pill above the button (or above the taskbar thumbnail);
-///  - left click on the Windows speaker icon → Fader's flyout; any click outside the flyout → closes it.
+///  - left click on the Windows speaker icon → Otto's flyout; any click outside the flyout → closes it.
 /// </summary>
 public sealed class GestureController : IDisposable
 {

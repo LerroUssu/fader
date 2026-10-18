@@ -4,12 +4,12 @@ using System.Windows.Input;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
-using Fader.Audio;
-using Fader.Native;
-using Fader.Rules;
-using static Fader.Native.NativeMethods;
+using Otto.Audio;
+using Otto.Native;
+using Otto.Rules;
+using static Otto.Native.NativeMethods;
 
-namespace Fader.UI;
+namespace Otto.UI;
 
 public partial class FlyoutWindow : Window
 {

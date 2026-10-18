@@ -4,19 +4,19 @@ using System.Net.Http;
 using System.Security.Cryptography;
 using System.Text.Json;
 
-namespace Fader;
+namespace Otto;
 
 /// <summary>A newer release found on GitHub. <see cref="DownloadUrl"/> is null when it has no exe for this build.</summary>
 public sealed record UpdateInfo(Version Version, string Tag, string PageUrl, string? AssetName, string? DownloadUrl, long Size, string? Sha256);
 
 /// <summary>
-/// Updates from the public GitHub releases of LerroUssu/fader. No account, no token: one anonymous
+/// Updates from the public GitHub releases of LerroUssu/otto-volume. No account, no token: one anonymous
 /// API call per check. Install = download the matching exe next to the running one, verify size and
 /// SHA-256, rename the running exe aside (Windows allows that), move the new one in, restart.
 /// </summary>
 public static class Updater
 {
-    public const string Repo = "LerroUssu/fader";
+    public const string Repo = "LerroUssu/otto-volume";
     public const string ReleasesPage = "https://github.com/" + Repo + "/releases";
 
     /// <summary>The portable build carries its own .NET runtime; the small one needs .NET 8 installed. Each updates to its own kind.</summary>
@@ -28,16 +28,18 @@ public static class Updater
     public static string AssetSuffix => IsSelfContained ? "-win-x64-portable.exe" : "-win-x64-needs-dotnet8.exe";
 
     public static Version Current { get; } = Normalize(typeof(Updater).Assembly.GetName().Version ?? new Version(0, 0, 0));
-    public static string ExePath => Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "Fader.exe");
+    private static string? _exePath;
+    /// <summary>The running exe; changes once when a migrated Fader.exe renames itself to Otto.exe.</summary>
+    public static string ExePath { get => _exePath ?? Environment.ProcessPath ?? Path.Combine(AppContext.BaseDirectory, "Otto.exe"); set => _exePath = value; }
     private static string OldPath => ExePath + ".old";
-    private static string StagingPath => Path.Combine(Path.GetDirectoryName(ExePath)!, "Fader.update.exe");
+    private static string StagingPath => Path.Combine(Path.GetDirectoryName(ExePath)!, "Otto.update.exe");
 
     private static readonly HttpClient Http = CreateClient();
 
     private static HttpClient CreateClient()
     {
         var c = new HttpClient { Timeout = TimeSpan.FromMinutes(10) };
-        c.DefaultRequestHeaders.UserAgent.ParseAdd($"Fader/{Current.ToString(3)}");
+        c.DefaultRequestHeaders.UserAgent.ParseAdd($"Otto/{Current.ToString(3)}");
         return c;
     }
 

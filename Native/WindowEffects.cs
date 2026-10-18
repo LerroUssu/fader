@@ -1,8 +1,8 @@
 using System.Windows;
 using System.Windows.Interop;
-using static Fader.Native.NativeMethods;
+using static Otto.Native.NativeMethods;
 
-namespace Fader.Native;
+namespace Otto.Native;
 
 /// <summary>Extended window styles for the pop-up windows.</summary>
 public static class WindowEffects

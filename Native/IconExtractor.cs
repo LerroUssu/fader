@@ -4,9 +4,9 @@ using System.Windows;
 using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
-using static Fader.Native.NativeMethods;
+using static Otto.Native.NativeMethods;
 
-namespace Fader.Native;
+namespace Otto.Native;
 
 /// <summary>
 /// Resolves an app icon as a frozen WPF ImageSource. Order: the session's own icon path

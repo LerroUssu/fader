@@ -1,9 +1,9 @@
 using System.Text.RegularExpressions;
 using System.Windows.Automation;
 using System.Windows.Threading;
-using static Fader.Native.NativeMethods;
+using static Otto.Native.NativeMethods;
 
-namespace Fader.Native;
+namespace Otto.Native;
 
 /// <summary>
 /// Knows where the taskbar(s), the Windows speaker tray icon and the hovered taskbar button are.

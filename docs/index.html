@@ -3,26 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Fader</title>
+<title>Otto</title>
 <meta name="description" content="Per-app volume for Windows, done right. One-handed mixer, taskbar scrolling, start levels for new apps.">
-<link rel="icon" href="fader-256.png">
+<link rel="icon" href="otto-256.png">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
   :root {
-    --bg: #0a0a0e;
-    --panel: #111117;
-    --panel-2: #16161e;
+    --bg: #0a0d0d;
+    --panel: #0f1314;
+    --panel-2: #141a1b;
     --hairline: rgba(255,255,255,.08);
     --hairline-strong: rgba(255,255,255,.14);
-    --text: #f4f4f8;
-    --dim: #8f8f9d;
-    --faint: #8a8a99;
-    --accent: #8b5cf6;
-    --accent-2: #a78bfa;
-    --accent-soft: rgba(139,92,246,.18);
-    --danger: #f43f5e;
+    --text: #f2f5f4;
+    --dim: #8c979a;
+    --faint: #8a9496;
+    --accent: #46a873;
+    --accent-2: #7fd3a3;
+    --accent-soft: rgba(70,168,115,.18);
+    --danger: #e0474c;
     --radius: 16px;
   }
   * { box-sizing: border-box; }
@@ -38,13 +38,13 @@
     font-family: ui-monospace, "Cascadia Code", Consolas, monospace; font-size: .92em;
     background: rgba(255,255,255,.06); border: 1px solid var(--hairline); border-radius: 6px; padding: 1px 6px;
   }
-  kbd { background: rgba(139,92,246,.14); border-color: rgba(139,92,246,.35); color: #e9ddff; }
+  kbd { background: rgba(70,168,115,.14); border-color: rgba(70,168,115,.35); color: #dff5e8; }
   .wrap { max-width: 980px; margin: 0 auto; padding: 0 20px 80px; }
 
   /* glow */
   .sky { position: fixed; inset: 0; pointer-events: none; z-index: 0;
     background:
-      radial-gradient(600px 300px at 20% -10%, rgba(139,92,246,.14), transparent 70%); }
+      radial-gradient(600px 300px at 20% -10%, rgba(70,168,115,.14), transparent 70%); }
   .wrap { position: relative; z-index: 1; }
 
   /* hero */
@@ -54,13 +54,13 @@
   .hero h1 span { color: var(--accent-2); }
   .hero p { margin: 10px 0 0; color: var(--dim); font-size: 18px; max-width: 620px; }
   .pills { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
-  .pill { font-size: 12px; font-weight: 600; color: var(--accent-2); background: var(--accent-soft); border: 1px solid rgba(139,92,246,.35); border-radius: 999px; padding: 4px 10px; }
+  .pill { font-size: 12px; font-weight: 600; color: var(--accent-2); background: var(--accent-soft); border: 1px solid rgba(70,168,115,.35); border-radius: 999px; padding: 4px 10px; }
 
   .cta { display: flex; gap: 12px; flex-wrap: wrap; margin: 26px 0 8px; }
   .btn { display: inline-flex; align-items: center; gap: 10px; padding: 12px 18px; border-radius: 12px; font-weight: 600;
     border: 1px solid var(--hairline-strong); background: var(--panel-2); color: var(--text); transition: transform .12s ease, border-color .12s ease; }
   .btn:hover { transform: translateY(-1px); border-color: var(--accent); text-decoration: none; }
-  .btn.primary { background: linear-gradient(90deg, #7c4def, #9f7cf7); border-color: transparent; color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.45); }
+  .btn.primary { background: linear-gradient(90deg, #2f8a5a, #5fbf8a); border-color: transparent; color: #fff; box-shadow: 0 8px 24px rgba(0,0,0,.45); }
   .btn small { font-weight: 500; color: rgba(255,255,255,.82); }
   .btn.primary small { color: rgba(255,255,255,.92); }
   .note { color: var(--faint); font-size: 13px; margin: 6px 0 0; }
@@ -79,13 +79,13 @@
   .demo { background: var(--panel); border: 1px solid var(--hairline); border-radius: var(--radius); padding: 14px 14px 10px; margin-top: 10px; }
   .row { display: grid; grid-template-columns: 34px 1fr 40px; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; }
   .row:hover { background: rgba(255,255,255,.04); }
-  .row .ic { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, #2d2d3a, #1b1b24); border: 1px solid var(--hairline); }
+  .row .ic { width: 28px; height: 28px; border-radius: 7px; background: linear-gradient(135deg, #2a3233, #192022); border: 1px solid var(--hairline); }
   .row .ic.c { background: linear-gradient(135deg, #ea4335, #fbbc04 60%, #34a853); }
   .row .ic.d { background: linear-gradient(135deg, #5865f2, #404eed); }
   .row .ic.s { background: linear-gradient(135deg, #1db954, #169c46); }
   .row .name { font-weight: 500; font-size: 14px; margin-bottom: 4px; }
   .track { height: 4px; border-radius: 2px; background: rgba(255,255,255,.13); position: relative; }
-  .track i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; background: linear-gradient(90deg, #7c4def, #a78bfa); }
+  .track i { position: absolute; left: 0; top: 0; bottom: 0; border-radius: 2px; background: linear-gradient(90deg, #2f8a5a, #7fd3a3); }
   .track b { position: absolute; top: 50%; width: 14px; height: 14px; border-radius: 50%; background: #fff; transform: translate(-50%,-50%); box-shadow: 0 1px 6px rgba(0,0,0,.6); }
   .meter { height: 2px; margin-top: 3px; border-radius: 1px; background: var(--accent); opacity: .75; }
   .pct { text-align: right; color: var(--dim); font-weight: 500; font-size: 12px; }
@@ -105,7 +105,7 @@
   .step::before { counter-increment: s; content: counter(s); width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center;
     background: var(--accent-soft); color: var(--accent-2); font-weight: 700; font-size: 13px; }
   .step p { margin: 2px 0 0; color: var(--dim); }
-  pre { background: var(--panel-2); border: 1px solid var(--hairline); border-radius: 12px; padding: 14px 16px; overflow: auto; color: #d9d9e3; font-size: 13px; }
+  pre { background: var(--panel-2); border: 1px solid var(--hairline); border-radius: 12px; padding: 14px 16px; overflow: auto; color: #d9e3e0; font-size: 13px; }
   pre code { background: none; border: 0; padding: 0; }
 
   .log { display: grid; gap: 10px; }
@@ -128,9 +128,9 @@
 <div class="wrap">
 
   <header class="hero">
-    <img src="fader-256.png" alt="Fader icon: three faders on a violet tile">
+    <img src="otto-256.png" alt="Otto icon: three faders on a green tile">
     <div>
-      <h1><span>Fader</span></h1>
+      <h1><span>Otto</span></h1>
       <p>Per-app volume for Windows, done right. One hand on the mouse, no key held, nothing to install.</p>
       <div class="pills">
         <span class="pill">Windows 10 / 11</span><span class="pill">x64</span><span class="pill">Portable</span><span class="pill">Free</span>
@@ -139,11 +139,11 @@
   </header>
 
   <div class="cta">
-    <a class="btn primary" href="https://github.com/LerroUssu/fader/releases/latest">
+    <a class="btn primary" href="https://github.com/LerroUssu/otto-volume/releases/latest">
       <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="m7 10 5 5 5-5"/><path d="M5 21h14"/></svg>
-      Download Fader <small>· portable zip, runs anywhere</small>
+      Download Otto <small>· portable zip, runs anywhere</small>
     </a>
-    <a class="btn" href="https://github.com/LerroUssu/fader">Source on GitHub</a>
+    <a class="btn" href="https://github.com/LerroUssu/otto-volume">Source on GitHub</a>
   </div>
   <p class="note">Unsigned: on a new PC Windows SmartScreen may show "Windows protected your PC" once. Choose <em>More info → Run anyway</em>.</p>
 
@@ -152,10 +152,10 @@
     <div class="card"><h3><span class="glyph">▤</span>The mixer</h3><p>Click the normal Windows speaker icon (or press <kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>V</kbd>) and get every app that has audio: icon, slider, live meter, mute. Drag it anywhere and it stays open.</p></div>
     <div class="card"><h3><span class="glyph">↕</span>Scroll on the taskbar</h3><p>Wheel over an app's taskbar button changes that app's volume, no key needed. Hover shows its level. Over the clock or empty taskbar: master volume.</p></div>
     <div class="card"><h3><span class="glyph">⌥</span>Alt + scroll anywhere</h3><p>Hold <kbd>Alt</kbd> and scroll over any window, full-screen games included, to change that app's volume. The modifier is configurable.</p></div>
-    <div class="card"><h3><span class="glyph">◔</span>Start level for new apps</h3><p>The moment an app opens its audio, before you hear anything, Fader sets it to your start level (50 % by default). Per-app rules give some apps their own, or leave them alone.</p></div>
+    <div class="card"><h3><span class="glyph">◔</span>Start level for new apps</h3><p>The moment an app opens its audio, before you hear anything, Otto sets it to your start level (50 % by default). Per-app rules give some apps their own, or leave them alone.</p></div>
     <div class="card"><h3><span class="glyph">◎</span>One pill, one place</h3><p>Every change shows a small glass pill at a fixed spot: top, center or bottom of the screen the mouse is on. Your choice.</p></div>
-    <div class="card"><h3><span class="glyph">▣</span>Quiet by design</h3><p>Lives in the tray, opens no window on start, one small exe. Settings in <code>%APPDATA%\Fader</code>, or next to the exe in portable mode.</p></div>
-    <div class="card wide"><h3><span class="glyph">↻</span>Updates itself</h3><p>Fader checks GitHub twice a day. When a new version is out, the tray menu shows <em>Update to vX</em>: one click downloads it, verifies its checksum, swaps the exe and restarts. Settings stay.</p></div>
+    <div class="card"><h3><span class="glyph">▣</span>Quiet by design</h3><p>Lives in the tray, opens no window on start, one small exe. Settings in <code>%APPDATA%\Otto</code>, or next to the exe in portable mode.</p></div>
+    <div class="card wide"><h3><span class="glyph">↻</span>Updates itself</h3><p>Otto checks GitHub twice a day. When a new version is out, the tray menu shows <em>Update to vX</em>: one click downloads it, verifies its checksum, swaps the exe and restarts. Settings stay.</p></div>
   </div>
 
   <h2>Looks like this</h2>
@@ -169,14 +169,14 @@
   <h2>Cheat sheet</h2>
   <table>
     <tr><th>Do this</th><th>Result</th></tr>
-    <tr><td>Click the speaker tray icon</td><td><p>Opens Fader's mixer instead of the Windows slider. Right-click stays Windows'.</p></td></tr>
+    <tr><td>Click the speaker tray icon</td><td><p>Opens Otto's mixer instead of the Windows slider. Right-click stays Windows'.</p></td></tr>
     <tr><td><kbd>Ctrl</kbd>+<kbd>Alt</kbd>+<kbd>V</kbd></td><td><p>Opens the mixer where the mouse is. Configurable.</p></td></tr>
     <tr><td>Wheel over a taskbar button</td><td><p>That app's volume. Hovering shows the level pill.</p></td></tr>
     <tr><td>Wheel over clock / tray / empty taskbar</td><td><p>Master volume.</p></td></tr>
     <tr><td><kbd>Alt</kbd> + wheel over a window</td><td><p>That app's volume, wherever the window is, games included.</p></td></tr>
     <tr><td>Click an app's icon in the mixer</td><td><p>Mute / unmute it.</p></td></tr>
     <tr><td>Drag the mixer, or click its pin</td><td><p>It stays open until <kbd>Esc</kbd>, the pin, or the tray.</p></td></tr>
-    <tr><td>Right-click Fader's tray icon</td><td><p>Open mixer · Settings · Start with Windows · Quit.</p></td></tr>
+    <tr><td>Right-click Otto's tray icon</td><td><p>Open mixer · Settings · Start with Windows · Quit.</p></td></tr>
   </table>
 
   <h2>Settings</h2>
@@ -184,36 +184,37 @@
     <div class="card"><h3>Quick adjust</h3><p>Taskbar scrolling, hover pill, speaker-icon click, the Alt gesture and its modifier (Alt, Ctrl+Alt, Shift+Alt, Ctrl+Shift), the wheel step (1 / 2 / 5 %), pill on/off and its position.</p></div>
     <div class="card"><h3>Mixer</h3><p>The hotkey, start with Windows.</p></div>
     <div class="card"><h3>Updates</h3><p>Check for updates, install the new version in one click, or turn the automatic check off.</p></div>
-    <div class="card"><h3>New apps</h3><p>The default start level and per-app rules: an app can have its own start level or be left alone. Apps already playing when Fader starts are never touched.</p></div>
+    <div class="card"><h3>New apps</h3><p>The default start level and per-app rules: an app can have its own start level or be left alone. Apps already playing when Otto starts are never touched.</p></div>
   </div>
 
   <h2>Install &amp; run</h2>
   <div class="steps">
     <div class="step"><div><strong>Download</strong><p>Grab the portable zip from the latest release, unzip anywhere (a folder on your tools drive is perfect).</p></div></div>
-    <div class="step"><div><strong>Run Fader.exe</strong><p>It appears in the tray. Click the Windows speaker icon to see the mixer.</p></div></div>
-    <div class="step"><div><strong>Optional</strong><p>Settings → "Start Fader when Windows starts". For a USB stick, drop an empty file named <code>portable</code> next to the exe and it keeps its settings there.</p></div></div>
+    <div class="step"><div><strong>Run Otto.exe</strong><p>It appears in the tray. Click the Windows speaker icon to see the mixer.</p></div></div>
+    <div class="step"><div><strong>Optional</strong><p>Settings → "Start Otto when Windows starts". For a USB stick, drop an empty file named <code>portable</code> next to the exe and it keeps its settings there.</p></div></div>
   </div>
-  <p class="note" style="margin-top:14px">Command line: <code>Fader.exe --quit</code> asks a running Fader to exit, <code>Fader.exe --autostart</code> starts it and switches start-with-Windows on, <code>Fader.exe --update-now</code> updates a fresh start to the latest release, <code>Fader.exe --probe out.json</code> is a headless self-test.</p>
+  <p class="note" style="margin-top:14px">Command line: <code>Otto.exe --quit</code> asks a running Otto to exit, <code>Otto.exe --autostart</code> starts it and switches start-with-Windows on, <code>Otto.exe --update-now</code> updates a fresh start to the latest release, <code>Otto.exe --probe out.json</code> is a headless self-test.</p>
 
   <h2>Good to know</h2>
   <div class="grid">
-    <div class="card"><h3>Admin apps</h3><p>Apps running as administrator do not receive the scroll gestures unless Fader itself runs elevated (Windows rule). The mixer still controls them.</p></div>
-    <div class="card"><h3>Loudness ≠ volume</h3><p>A video mastered louder than the voice chat next to it is a loudness problem, not a volume one. Windows' per-app meter cannot tell the two apart, so Fader does not pretend to; Windows' own "Loudness Equalization" (device properties → Enhancements) flattens everything system-wide if you want that.</p></div>
+    <div class="card"><h3>Admin apps</h3><p>Apps running as administrator do not receive the scroll gestures unless Otto itself runs elevated (Windows rule). The mixer still controls them.</p></div>
+    <div class="card"><h3>Loudness ≠ volume</h3><p>A video mastered louder than the voice chat next to it is a loudness problem, not a volume one. Windows' per-app meter cannot tell the two apart, so Otto does not pretend to; Windows' own "Loudness Equalization" (device properties → Enhancements) flattens everything system-wide if you want that.</p></div>
     <div class="card"><h3>Build it yourself</h3><p>.NET 8 SDK, then <code>dotnet publish</code> (see the README in the repo). C#, WPF, NAudio for Windows Core Audio.</p></div>
   </div>
 
   <h2>Changelog</h2>
   <div class="log">
+    <div class="ver"><div class="tag">0.4.0</div><ul><li>Fader is now <strong>Otto</strong>, after Otto Suwen from Re:Zero, the merchant who hears every voice around him. New green look from his cloak.</li><li>Updating from Fader keeps your settings and start-with-Windows, and renames <code>Fader.exe</code> to <code>Otto.exe</code> by itself.</li></ul></div>
     <div class="ver"><div class="tag">0.3.0</div><ul><li>Built-in updater: <em>Check for updates</em> in the tray menu and in Settings, automatic check twice a day, one-click install with checksum verification.</li><li>Install 0.3.0 by hand once; every later version arrives through the app.</li></ul></div>
     <div class="ver"><div class="tag">0.2.2</div><ul><li>The level pill sits at one fixed spot (top / center / bottom, your pick) instead of jumping around.</li></ul></div>
     <div class="ver"><div class="tag">0.2.1</div><ul><li>Removed the per-app volume cap (apps never raise their own session volume, so it had nothing to do).</li></ul></div>
-    <div class="ver"><div class="tag">0.2.0</div><ul><li>Scroll over taskbar buttons without a key, hover pill, speaker-icon click opens Fader.</li><li>Drag or pin the mixer to keep it open; resizable, scrollable Settings.</li><li>Portable self-contained build; <code>--quit</code> and <code>--autostart</code>.</li><li>Removed the loudness guard and the blur option.</li></ul></div>
+    <div class="ver"><div class="tag">0.2.0</div><ul><li>Scroll over taskbar buttons without a key, hover pill, speaker-icon click opens Otto.</li><li>Drag or pin the mixer to keep it open; resizable, scrollable Settings.</li><li>Portable self-contained build; <code>--quit</code> and <code>--autostart</code>.</li><li>Removed the loudness guard and the blur option.</li></ul></div>
     <div class="ver"><div class="tag">0.1.0</div><ul><li>First version: mixer flyout, Alt+scroll, start level and cap rules, tray icon, hotkey.</li></ul></div>
   </div>
 
   <footer>
-    <span>Fader · MIT license · Figtree font (OFL)</span>
-    <span><a href="https://github.com/LerroUssu/fader">github.com/LerroUssu/fader</a></span>
+    <span>Otto · MIT license · Figtree font (OFL)</span>
+    <span><a href="https://github.com/LerroUssu/otto-volume">github.com/LerroUssu/otto-volume</a></span>
   </footer>
 </div>
 </body>

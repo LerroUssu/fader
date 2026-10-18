@@ -1,7 +1,7 @@
 using System.Windows.Threading;
 using NAudio.CoreAudioApi;
 
-namespace Fader.Audio;
+namespace Otto.Audio;
 
 /// <summary>Master volume of the default render device.</summary>
 public sealed class MasterAudio : ObservableObject

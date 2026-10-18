@@ -1,7 +1,7 @@
 using System.ComponentModel;
 using System.Runtime.CompilerServices;
 
-namespace Fader;
+namespace Otto;
 
 public abstract class ObservableObject : INotifyPropertyChanged
 {

@@ -1,16 +1,16 @@
 using System.IO;
 
-namespace Fader;
+namespace Otto;
 
 /// <summary>
-/// Append-only log next to the settings. Data lives in %APPDATA%\Fader, or next to Fader.exe when a
+/// Append-only log next to the settings. Data lives in %APPDATA%\Otto, or next to Otto.exe when a
 /// "settings.json" or "portable" file sits there (USB stick / copy-anywhere use). Never throws.
 /// </summary>
 public static class Log
 {
     public static readonly string Dir = ResolveDataDir();
-    public static readonly string File = Path.Combine(Dir, "fader.log");
-    public static readonly string FallbackFile = Path.Combine(Path.GetTempPath(), "fader.log");
+    public static readonly string File = Path.Combine(Dir, "otto.log");
+    public static readonly string FallbackFile = Path.Combine(Path.GetTempPath(), "otto.log");
     public static bool IsPortable { get; private set; }
 
     private static readonly object Gate = new();
@@ -33,7 +33,21 @@ public static class Log
             }
         }
         catch { }
-        return Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Fader");
+        var appData = Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData);
+        var dir = Path.Combine(appData, "Otto");
+        // Renamed from Fader in 0.4.0: bring the old settings along once.
+        try
+        {
+            var legacy = Path.Combine(appData, "Fader", "settings.json");
+            var target = Path.Combine(dir, "settings.json");
+            if (!System.IO.File.Exists(target) && System.IO.File.Exists(legacy))
+            {
+                Directory.CreateDirectory(dir);
+                System.IO.File.Copy(legacy, target);
+            }
+        }
+        catch { }
+        return dir;
     }
 
     public static void Write(string message)

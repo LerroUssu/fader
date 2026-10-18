@@ -1,12 +1,12 @@
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Windows.Threading;
-using Fader.Native;
+using Otto.Native;
 using NAudio.CoreAudioApi;
 using NAudio.CoreAudioApi.Interfaces;
-using static Fader.Native.NativeMethods;
+using static Otto.Native.NativeMethods;
 
-namespace Fader.Audio;
+namespace Otto.Audio;
 
 /// <summary>
 /// Tracks every audio session on the default output device, grouped per application, and keeps
@@ -37,7 +37,7 @@ public sealed class AudioSessionService : IDisposable
 
     /// <summary>(app, session, initialEnumeration). Fired after the session is in the model.</summary>
     public event Action<AppAudio, SessionEntry, bool>? SessionAdded;
-    /// <summary>A session's volume changed outside Fader (Windows mixer, the app itself, …).</summary>
+    /// <summary>A session's volume changed outside Otto (Windows mixer, the app itself, …).</summary>
     public event Action<AppAudio, SessionEntry, float>? SessionVolumeChanged;
     public event Action? DeviceChanged;
 

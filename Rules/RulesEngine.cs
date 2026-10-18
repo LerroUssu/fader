@@ -1,6 +1,6 @@
-using Fader.Audio;
+using Otto.Audio;
 
-namespace Fader.Rules;
+namespace Otto.Rules;
 
 /// <summary>
 /// The "new app" behaviour: when Windows creates an audio session for an app that was just
@@ -22,7 +22,7 @@ public sealed class RulesEngine
 
     private void OnSessionAdded(AppAudio app, SessionEntry entry, bool initial)
     {
-        if (app.IsSystemSounds || initial) return; // sessions that existed when Fader started are left alone
+        if (app.IsSystemSounds || initial) return; // sessions that existed when Otto started are left alone
         var settings = _settings();
         if (settings.EffectiveStart(app.Key) is not int start) return;
         if (!IsFreshLaunch(app, entry, settings)) return;

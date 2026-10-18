@@ -1,8 +1,8 @@
 using System.Windows.Input;
 using System.Windows.Interop;
-using static Fader.Native.NativeMethods;
+using static Otto.Native.NativeMethods;
 
-namespace Fader.Native;
+namespace Otto.Native;
 
 /// <summary>Registers one global hotkey on a hidden message-only window.</summary>
 public sealed class HotkeyManager : IDisposable
@@ -15,7 +15,7 @@ public sealed class HotkeyManager : IDisposable
 
     public HotkeyManager()
     {
-        var p = new HwndSourceParameters("FaderHotkeyWindow")
+        var p = new HwndSourceParameters("OttoHotkeyWindow")
         {
             Width = 0, Height = 0, WindowStyle = 0,
             ParentWindow = new IntPtr(-3) // HWND_MESSAGE: message-only window

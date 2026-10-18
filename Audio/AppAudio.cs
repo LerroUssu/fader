@@ -2,7 +2,7 @@ using System.Windows.Media;
 using NAudio.CoreAudioApi;
 using NAudio.CoreAudioApi.Interfaces;
 
-namespace Fader.Audio;
+namespace Otto.Audio;
 
 /// <summary>All audio sessions of one application (grouped by executable), as shown in one mixer row.</summary>
 public sealed class AppAudio : ObservableObject

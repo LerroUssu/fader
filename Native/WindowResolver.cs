@@ -1,8 +1,8 @@
 using System.IO;
 using System.Windows.Automation;
-using static Fader.Native.NativeMethods;
+using static Otto.Native.NativeMethods;
 
-namespace Fader.Native;
+namespace Otto.Native;
 
 public enum TargetKind { None, Self, Window, Taskbar }
 

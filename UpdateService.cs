@@ -1,7 +1,7 @@
 using System.Diagnostics;
 using System.Windows.Threading;
 
-namespace Fader;
+namespace Otto;
 
 /// <summary>Update state shared by the tray menu and the settings window. All members run on the UI thread.</summary>
 public sealed class UpdateService : ObservableObject
@@ -90,7 +90,7 @@ public sealed class UpdateService : ObservableObject
         {
             Log.Error("update install", ex);
             Status = ex is UnauthorizedAccessException or System.IO.IOException
-                ? "Couldn't replace Fader.exe (is its folder read-only?). Download it from the release page instead."
+                ? "Couldn't replace Otto.exe (is its folder read-only?). Download it from the release page instead."
                 : $"Update failed: {ex.Message}";
             Busy = false;
         }

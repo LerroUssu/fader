@@ -1,7 +1,7 @@
 using System.Runtime.InteropServices;
-using static Fader.Native.NativeMethods;
+using static Otto.Native.NativeMethods;
 
-namespace Fader.Native;
+namespace Otto.Native;
 
 /// <summary>
 /// Low-level mouse hook on its own STA thread with a minimal message loop (a busy UI thread can
@@ -56,7 +56,7 @@ public sealed class MouseWheelHook : IDisposable
     public MouseWheelHook()
     {
         _proc = Callback;
-        _thread = new Thread(HookThread) { IsBackground = true, Name = "Fader.MouseHook" };
+        _thread = new Thread(HookThread) { IsBackground = true, Name = "Otto.MouseHook" };
         _thread.SetApartmentState(ApartmentState.STA);
         _thread.Start();
         _ready.Wait(TimeSpan.FromSeconds(3));

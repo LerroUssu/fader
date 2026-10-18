@@ -3,11 +3,11 @@ using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
 using System.Windows.Threading;
-using Fader.Native;
-using Fader.Rules;
-using static Fader.Native.NativeMethods;
+using Otto.Native;
+using Otto.Rules;
+using static Otto.Native.NativeMethods;
 
-namespace Fader.UI;
+namespace Otto.UI;
 
 /// <summary>
 /// The little glass pill that shows a level. Always at the same spot (top / centre / bottom of the

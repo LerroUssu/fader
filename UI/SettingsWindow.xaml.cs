@@ -1,9 +1,9 @@
 using System.Windows;
 using System.Windows.Input;
-using Fader.Audio;
-using Fader.Rules;
+using Otto.Audio;
+using Otto.Rules;
 
-namespace Fader.UI;
+namespace Otto.UI;
 
 public partial class SettingsWindow : Window
 {

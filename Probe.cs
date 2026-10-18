@@ -3,15 +3,15 @@ using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
 using System.Windows.Threading;
-using Fader.Audio;
-using Fader.Native;
-using Fader.Rules;
-using static Fader.Native.NativeMethods;
+using Otto.Audio;
+using Otto.Native;
+using Otto.Rules;
+using static Otto.Native.NativeMethods;
 
-namespace Fader;
+namespace Otto;
 
 /// <summary>
-/// `Fader.exe --probe out.json`: headless self-test. Enumerates devices/sessions, resolves icons,
+/// `Otto.exe --probe out.json`: headless self-test. Enumerates devices/sessions, resolves icons,
 /// fonts, the window under the cursor, parses hotkeys and dry-runs the rules. Opens no window and
 /// changes no volume.
 /// </summary>
@@ -132,7 +132,7 @@ public static class Probe
             Directory.CreateDirectory(dir);
             try
             {
-                string exe = Path.Combine(dir, "Fader.exe"), staged = Path.Combine(dir, "Fader.update.exe");
+                string exe = Path.Combine(dir, "Otto.exe"), staged = Path.Combine(dir, "Otto.update.exe");
                 File.WriteAllText(exe, "old"); File.WriteAllText(staged, "new");
                 Updater.Swap(exe, staged);
                 bool ok = File.ReadAllText(exe) == "new" && File.ReadAllText(exe + ".old") == "old" && !File.Exists(staged);

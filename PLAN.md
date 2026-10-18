@@ -1,4 +1,4 @@
-# Fader — per-app volume for Windows, done right
+# Otto — per-app volume for Windows, done right
 
 A tray app that makes changing one application's volume as fast as changing the master
 volume, and that tames apps that launch too loud.
@@ -12,7 +12,7 @@ Apps also remember their last level, so Chrome comes back at 100 % and a game at
 ## What it does
 
 1. **Mixer flyout** — left-click the tray icon (or press `Ctrl+Alt+V`): a dark, glassy,
-   Refbox-style panel (black, Figtree, hairline borders, violet accent) lists every app
+   Refbox-style panel (black, Figtree, hairline borders, green accent) lists every app
    currently holding an audio session on the default output device. Each row: app icon
    (click = mute), name, slider, live peak meter, percentage. Master volume at the top.
    Scrolling over a row nudges it. Click outside / Esc closes it.
@@ -23,7 +23,7 @@ Apps also remember their last level, so Chrome comes back at 100 % and a game at
    button to its app); over an empty part of the taskbar it changes the master volume.
    Modifier is configurable (Alt, Ctrl+Alt, Shift+Alt, Ctrl+Shift).
 3. **New-app rules** — the moment Windows creates an audio session for an app (that is
-   when the app first initialises audio, before the first sound is audible), Fader:
+   when the app first initialises audio, before the first sound is audible), Otto:
    sets it to the **start level** (default 50 %) if the app was just launched (process
    younger than 60 s) or had disappeared from the mixer for 10+ minutes. Per-app rules
    override the default (e.g. Chrome starts at 40 %, Spotify is exempt). A "cap" (ceiling on
@@ -32,7 +32,7 @@ Apps also remember their last level, so Chrome comes back at 100 % and a game at
 4. **One-handed taskbar control** (added 2026-10-13): wheel over an app's taskbar button, no
    key held, changes its volume; hovering a button shows its level pill above the button (or
    above the taskbar thumbnail); wheel over the clock/tray/empty taskbar = master volume.
-   Left-clicking the normal Windows speaker tray icon opens Fader's mixer (right-click stays
+   Left-clicking the normal Windows speaker tray icon opens Otto's mixer (right-click stays
    Windows'). Implemented in the mouse hook with cached taskbar/speaker-icon rectangles
    (`TaskbarTracker`, UI Automation off the UI thread).
 5. **Loudness guard — removed (2026-10-13).** A per-app leveler on the session peak meters was
@@ -45,9 +45,9 @@ Apps also remember their last level, so Chrome comes back at 100 % and a game at
    `PART_ScrollContentPresenter`, so nothing scrolled). The acrylic "blur behind" option was
    removed: on Windows 10 the accent blur paints a square region behind the rounded panel.
 6b. **Pill position** (v0.2.2): the OSD pill used to anchor to what was scrolled (window top, taskbar thumbnail, screen bottom) and jumped around; it now always sits at a fixed spot (top / centre / bottom of the cursor's monitor, setting, default bottom).
-7. **Packaging**: `dist\portable\Fader.exe` is self-contained (runtime inside, compressed single
+7. **Packaging**: `dist\portable\Otto.exe` is self-contained (runtime inside, compressed single
    file); a `portable` marker or `settings.json` next to the exe makes it keep its data there.
-   Releases are copied to `M:\SOFTWARES\Fader`. `--quit` exits a running instance cleanly,
+   Releases are copied to `M:\SOFTWARES\Otto`. `--quit` exits a running instance cleanly,
    `--autostart` turns on start-with-Windows (used to launch it from outside my sandbox via Explorer).
 8. Settings window for all of the above, "start with Windows" toggle, single instance,
    runs silently in the tray.
@@ -60,7 +60,7 @@ full-screen apps.
 ## Tech
 
 - C# / .NET 8, WPF (custom-drawn chrome, transparent rounded windows), WinForms only for
-  the tray icon. Single `Fader.exe` (framework-dependent, uses the .NET 8 Desktop runtime
+  the tray icon. Single `Otto.exe` (framework-dependent, uses the .NET 8 Desktop runtime
   already installed on this PC).
 - Audio: Windows Core Audio (WASAPI session API) through NAudio.Wasapi —
   `IAudioSessionManager2` (session enumeration + `OnSessionCreated`),
@@ -73,20 +73,20 @@ full-screen apps.
   flyout. UI Automation to identify hovered taskbar buttons.
 - Icons: `IShellItemImageFactory` (same high-res icons Explorer uses), fallbacks to
   `ExtractIconEx` and the session's own icon path (system sounds).
-- Settings: `%APPDATA%\Fader\settings.json`. Log: `%APPDATA%\Fader\fader.log`.
+- Settings: `%APPDATA%\Otto\settings.json`. Log: `%APPDATA%\Otto\otto.log`.
 
 ## Layout
 
 ```
 fader/
-  Fader.csproj, app.manifest, App.xaml(.cs)
+  Otto.csproj, app.manifest, App.xaml(.cs)
   Audio/   AudioSessionService.cs, AppAudio.cs, SessionEntry.cs, ProcessInfo.cs
   Rules/   Settings.cs, RulesEngine.cs
   Native/  NativeMethods.cs, MouseWheelHook.cs, WindowResolver.cs, IconExtractor.cs,
            HotkeyManager.cs, WindowEffects.cs, AutoStart.cs
   UI/      Theme.xaml, FlyoutWindow.xaml(.cs), OsdWindow.xaml(.cs), SettingsWindow.xaml(.cs)
   Tray/    TrayIcon.cs
-  Probe.cs (headless self-test: `Fader.exe --probe out.json`, opens no window, changes nothing)
+  Probe.cs (headless self-test: `Otto.exe --probe out.json`, opens no window, changes nothing)
   assets/  fonts (Figtree, OFL), fader.ico
 ```
 
@@ -94,7 +94,7 @@ fader/
 
 ```
 dotnet publish -c Release -r win-x64 --self-contained false -p:PublishSingleFile=true
-→ bin\Release\net8.0-windows\win-x64\publish\Fader.exe
+→ bin\Release\net8.0-windows\win-x64\publish\Otto.exe
 ```
 
 ## Review notes (2026-10-12)
@@ -111,7 +111,7 @@ to the start level when it merely resumes after a long pause.
 
 ## Known limits
 
-- Apps running as administrator do not receive the Alt+scroll gesture unless Fader itself
+- Apps running as administrator do not receive the Alt+scroll gesture unless Otto itself
   runs elevated (Windows UIPI). The flyout still controls them.
 - Exclusive full-screen (old DirectX) games hide every overlay; borderless is fine.
 - Taskbar-button matching relies on button names; a window whose title doesn't contain

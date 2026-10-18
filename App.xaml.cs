@@ -54,6 +54,10 @@ public partial class App : Application
         // Started by the updater: let the previous version finish exiting before taking the single-instance lock.
         if (justUpdated && updatedIdx + 1 < e.Args.Length && int.TryParse(e.Args[updatedIdx + 1], out int previousPid)) Updater.AfterUpdate(previousPid);
 
+        // Renamed from Fader in 0.4.0. A single-file exe cannot rename itself while it runs (the runtime keeps
+        // reading it), so an updated Fader.exe hands over to a fresh Otto.exe copy and exits.
+        if (!wantQuit && HandOffFromFaderExe(quiet)) { Shutdown(0); return; }
+
         // Single instance: a second launch asks the first one to open the mixer (or, with --quit, to exit cleanly).
         _mutex = new Mutex(true, @"Local\Otto.SingleInstance", out bool isFirst);
         _showSignal = new EventWaitHandle(false, EventResetMode.AutoReset, @"Local\Otto.ShowFlyout");
@@ -142,32 +146,42 @@ public partial class App : Application
         Log.Write($"[app] started v{typeof(App).Assembly.GetName().Version} hook={_gesture.HookInstalled} data={Log.Dir}");
     }
 
-    /// <summary>
-    /// Until 0.4.0 the app was called Fader. An updated copy still runs as Fader.exe: rename it to
-    /// Otto.exe (Windows allows renaming a running exe) and move its start-with-Windows entry.
-    /// </summary>
-    private static void MigrateFromFader()
+    /// <summary>Running as Fader.exe: copy to Otto.exe next to it, start that (it waits for this process to exit), and stop here.</summary>
+    private static bool HandOffFromFaderExe(bool quiet)
     {
         try
         {
             string exe = Updater.ExePath;
-            string dir = System.IO.Path.GetDirectoryName(exe)!;
-            if (System.IO.Path.GetFileName(exe).Equals("Fader.exe", StringComparison.OrdinalIgnoreCase))
+            if (!System.IO.Path.GetFileName(exe).Equals("Fader.exe", StringComparison.OrdinalIgnoreCase)) return false;
+            string target = System.IO.Path.Combine(System.IO.Path.GetDirectoryName(exe)!, "Otto.exe");
+            System.IO.File.Copy(exe, target, overwrite: true);
+            var psi = new System.Diagnostics.ProcessStartInfo(target) { UseShellExecute = false, WorkingDirectory = System.IO.Path.GetDirectoryName(target)! };
+            psi.ArgumentList.Add("--updated");
+            psi.ArgumentList.Add(Environment.ProcessId.ToString());
+            if (quiet) psi.ArgumentList.Add("--quiet");
+            System.Diagnostics.Process.Start(psi);
+            Log.Write($"[migrate] {exe} handed over to {target}");
+            return true;
+        }
+        catch (Exception ex) { Log.Error("migrate hand-off", ex); return false; } // keep running as Fader.exe
+    }
+
+    /// <summary>After the hand-off: remove Fader's exe and leftovers, move the start-with-Windows entry to Otto.</summary>
+    private static void MigrateFromFader()
+    {
+        string dir = System.IO.Path.GetDirectoryName(Updater.ExePath)!;
+        Task.Run(async () =>
+        {
+            foreach (var name in new[] { "Fader.exe", "Fader.exe.old", "Fader.update.exe" })
             {
-                string target = System.IO.Path.Combine(dir, "Otto.exe");
-                if (!System.IO.File.Exists(target))
+                string path = System.IO.Path.Combine(dir, name);
+                for (int i = 0; i < 10 && System.IO.File.Exists(path); i++)
                 {
-                    System.IO.File.Move(exe, target);
-                    Updater.ExePath = target;
-                    Log.Write($"[migrate] renamed {exe} → {target}");
+                    try { System.IO.File.Delete(path); Log.Write($"[migrate] removed {path}"); }
+                    catch { await Task.Delay(1000); }
                 }
             }
-            foreach (var leftover in new[] { "Fader.exe.old", "Fader.update.exe" })
-            {
-                try { System.IO.File.Delete(System.IO.Path.Combine(dir, leftover)); } catch { }
-            }
-        }
-        catch (Exception ex) { Log.Error("migrate exe", ex); }
+        });
         AutoStart.MigrateLegacy();
     }
 

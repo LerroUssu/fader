@@ -4,13 +4,21 @@ using System.Drawing.Imaging;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Controls.Primitives;
+using System.Reflection;
 using System.Windows.Interop;
+using System.Windows.Threading;
+using Microsoft.Win32;
 using WF = System.Windows.Forms;
 using static Otto.Native.NativeMethods;
 
 namespace Otto.Tray;
 
-/// <summary>Notification-area icon (WinForms NotifyIcon) with a WPF-styled context menu.</summary>
+/// <summary>
+/// Notification-area icon (WinForms NotifyIcon) with a WPF-styled context menu. Self-repairing: right after logon the
+/// shell can drop the first add (Explorer still starting) and NotifyIcon never retries, so Otto ran with no icon. A
+/// watchdog asks the shell whether the icon is there (Shell_NotifyIconGetRect) at 3, 10, 30, 60, 120 s, then every 30 s,
+/// and after resume / unlock, and adds it again when it is missing.
+/// </summary>
 public sealed class TrayIcon : IDisposable
 {
     private readonly WF.NotifyIcon _icon;
@@ -30,6 +38,21 @@ public sealed class TrayIcon : IDisposable
     public event Action? CheckUpdatesRequested;
     public event Action? BalloonClicked;
     public Func<bool> IsAutoStart { get; set; } = () => false;
+
+    // NotifyIcon keeps its owner window and icon id private; read once by reflection (field names differ across
+    // WinForms versions, so match by type). Unreadable = the watchdog re-adds blindly, only at the first checks.
+    private static readonly FieldInfo? WindowField = typeof(WF.NotifyIcon).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+        .FirstOrDefault(f => typeof(WF.NativeWindow).IsAssignableFrom(f.FieldType));
+    private static readonly FieldInfo? IdField = typeof(WF.NotifyIcon).GetFields(BindingFlags.Instance | BindingFlags.NonPublic)
+        .FirstOrDefault(f => (f.FieldType == typeof(uint) || f.FieldType == typeof(int)) && f.Name.TrimStart('_').Equals("id", StringComparison.OrdinalIgnoreCase));
+    /// <summary>True when this WinForms build lets us ask the shell about our icon (Probe checks it).</summary>
+    public static bool CanInspect => WindowField != null && IdField != null;
+
+    private static readonly int[] EarlyChecksSec = { 3, 10, 30, 60, 120 };
+    private const int SteadyCheckSec = 30;
+    private readonly DispatcherTimer _watch;
+    private readonly DateTime _started = DateTime.UtcNow;
+    private int _checkIdx;
 
     public TrayIcon()
     {
@@ -74,6 +97,72 @@ public sealed class TrayIcon : IDisposable
         _menu.Items.Add(new Separator { Style = (Style)Application.Current.FindResource("DarkMenuSeparator") });
         AddItem("Quit Otto", () => QuitRequested?.Invoke());
         _menu.Closed += (_, _) => _anchor.Hide();
+
+        _watch = new DispatcherTimer(DispatcherPriority.Background) { Interval = TimeSpan.FromSeconds(EarlyChecksSec[0]) };
+        _watch.Tick += (_, _) => OnWatch();
+        _watch.Start();
+        SystemEvents.PowerModeChanged += OnPowerMode;
+        SystemEvents.SessionSwitch += OnSessionSwitch;
+    }
+
+    // ---- self-repair ---------------------------------------------------------------------------
+
+    /// <summary>Is the icon in the notification area? null when the shell cannot be asked (no owner window / no reflection).</summary>
+    public bool? IsShown()
+    {
+        try
+        {
+            if (!CanInspect || WindowField!.GetValue(_icon) is not WF.NativeWindow w || w.Handle == IntPtr.Zero) return null;
+            var id = new NOTIFYICONIDENTIFIER { hWnd = w.Handle, uID = Convert.ToUInt32(IdField!.GetValue(_icon)) };
+            id.cbSize = (uint)System.Runtime.InteropServices.Marshal.SizeOf<NOTIFYICONIDENTIFIER>();
+            return Shell_NotifyIconGetRect(ref id, out _) == 0;
+        }
+        catch { return null; }
+    }
+
+    private void OnWatch()
+    {
+        _checkIdx++;
+        EnsureShown(_checkIdx <= EarlyChecksSec.Length ? "startup" : "watchdog", blindOk: _checkIdx <= 2);
+        double next = _checkIdx < EarlyChecksSec.Length ? EarlyChecksSec[_checkIdx] - EarlyChecksSec[_checkIdx - 1] : SteadyCheckSec;
+        _watch.Interval = TimeSpan.FromSeconds(next);
+    }
+
+    /// <summary>
+    /// Add the icon again when the shell lost it. blindOk: when the shell cannot be asked, re-add anyway (only at the
+    /// first checks after start / resume, so a working icon never flickers every 30 s).
+    /// </summary>
+    public void EnsureShown(string why, bool blindOk = false)
+    {
+        try
+        {
+            if (FindWindow("Shell_TrayWnd", null) == IntPtr.Zero) return; // no taskbar yet: the shell's TaskbarCreated will add it
+            bool? shown = IsShown();
+            if (shown == true || (shown == null && !blindOk)) return;
+            _icon.Visible = false;
+            _icon.Visible = true;
+            bool? after = IsShown();
+            Log.Write($"[tray] icon re-added ({why}, {(shown == null ? "unchecked" : "was missing")}, {(int)(DateTime.UtcNow - _started).TotalSeconds}s after start): {(after == null ? "unknown" : after.Value ? "shown" : "still missing")}");
+        }
+        catch (Exception ex) { Log.Error("tray repair", ex); }
+    }
+
+    private void OnPowerMode(object? sender, PowerModeChangedEventArgs e)
+    {
+        if (e.Mode == PowerModes.Resume) RecheckSoon("resume");
+    }
+    private void OnSessionSwitch(object? sender, SessionSwitchEventArgs e)
+    {
+        if (e.Reason is SessionSwitchReason.SessionUnlock or SessionSwitchReason.SessionLogon or SessionSwitchReason.ConsoleConnect) RecheckSoon(e.Reason.ToString());
+    }
+    /// <summary>After resume / unlock: check at 2 s and 10 s (SystemEvents fire on their own thread).</summary>
+    private void RecheckSoon(string why)
+    {
+        Application.Current?.Dispatcher.BeginInvoke(async () =>
+        {
+            await Task.Delay(2000); EnsureShown(why, blindOk: true);
+            await Task.Delay(8000); EnsureShown(why);
+        });
     }
 
     private MenuItem AddItem(string header, Action action)
@@ -160,6 +249,9 @@ public sealed class TrayIcon : IDisposable
 
     public void Dispose()
     {
+        _watch.Stop();
+        SystemEvents.PowerModeChanged -= OnPowerMode;
+        SystemEvents.SessionSwitch -= OnSessionSwitch;
         try { _icon.Visible = false; _icon.Dispose(); _drawnIcon.Dispose(); _anchor.Close(); } catch { }
     }
 }

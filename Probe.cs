@@ -103,6 +103,7 @@ public static class Probe
         });
 
         Check("autostart", () => AutoStart.IsEnabled());
+        Check("trayInspect", () => Otto.Tray.TrayIcon.CanInspect);
 
         Check("taskbar", () =>
         {

@@ -53,6 +53,7 @@ public sealed class TrayIcon : IDisposable
     private readonly DispatcherTimer _watch;
     private readonly DateTime _started = DateTime.UtcNow;
     private int _checkIdx;
+    private bool _distrust; // a re-add the shell still reports missing: stop trusting the check (no re-add loop)
 
     public TrayIcon()
     {
@@ -112,10 +113,11 @@ public sealed class TrayIcon : IDisposable
     {
         try
         {
-            if (!CanInspect || WindowField!.GetValue(_icon) is not WF.NativeWindow w || w.Handle == IntPtr.Zero) return null;
+            if (!CanInspect || _distrust || WindowField!.GetValue(_icon) is not WF.NativeWindow w || w.Handle == IntPtr.Zero) return null;
             var id = new NOTIFYICONIDENTIFIER { hWnd = w.Handle, uID = Convert.ToUInt32(IdField!.GetValue(_icon)) };
             id.cbSize = (uint)System.Runtime.InteropServices.Marshal.SizeOf<NOTIFYICONIDENTIFIER>();
-            return Shell_NotifyIconGetRect(ref id, out _) == 0;
+            // S_OK or S_FALSE (seen on Windows 10 for a visible icon) both mean "there"; only a failure code means lost.
+            return Shell_NotifyIconGetRect(ref id, out _) >= 0;
         }
         catch { return null; }
     }
@@ -142,6 +144,7 @@ public sealed class TrayIcon : IDisposable
             _icon.Visible = false;
             _icon.Visible = true;
             bool? after = IsShown();
+            if (after == false) _distrust = true;
             Log.Write($"[tray] icon re-added ({why}, {(shown == null ? "unchecked" : "was missing")}, {(int)(DateTime.UtcNow - _started).TotalSeconds}s after start): {(after == null ? "unknown" : after.Value ? "shown" : "still missing")}");
         }
         catch (Exception ex) { Log.Error("tray repair", ex); }
